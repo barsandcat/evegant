@@ -59,7 +59,7 @@ import diagramscene_rc
 
 class Arrow(QGraphicsLineItem):
     def __init__(self, startItem, endItem, parent=None, scene=None):
-        super(Arrow, self).__init__(parent, scene)
+        super(Arrow, self).__init__(parent)
 
         self.arrowHead = QPolygonF()
 
