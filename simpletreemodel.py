@@ -84,11 +84,11 @@ class TreeItem(object):
 
 
 class TreeModel(QAbstractItemModel):
-    def __init__(self, data, parent=None):
-        super(TreeModel, self).__init__(parent)
+    def __init__(self):
+        super(TreeModel, self).__init__(None)
 
         self.rootItem = TreeItem(("Title", "Summary"))
-        self.setupModelData(data.split('\n'), self.rootItem)
+        self.setupModelData()
 
     def columnCount(self, parent):
         if parent.isValid():
@@ -157,42 +157,28 @@ class TreeModel(QAbstractItemModel):
 
         return parentItem.childCount()
 
-    def setupModelData(self, lines, parent):
-        parents = [parent]
-        indentations = [0]
+    def setupModelData(self):
+        connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
+        cursor = connection.cursor()
+        cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName, iconID FROM invMarketGroups")
 
-        number = 0
+        marketGroups = {}
+        for row in cursor:            
+            groupID = row[0]
+            groupName = row[2]
+            print(groupName)
+            marketGroups[groupID] = TreeItem([groupName])
+            marketGroups[groupID].parentItem = row[1]
+        
+        for key, child in marketGroups.items():
+            parentID = child.parentItem
+            if parentID:
+                parent = marketGroups[parentID]
+            else:
+                parent = self.rootItem
 
-        while number < len(lines):
-            position = 0
-            while position < len(lines[number]):
-                if lines[number][position] != ' ':
-                    break
-                position += 1
-
-            lineData = lines[number][position:].trimmed()
-
-            if lineData:
-                # Read the column data from the rest of the line.
-                columnData = [s for s in lineData.split('\t') if s]
-
-                if position > indentations[-1]:
-                    # The last child of the current parent is now the new
-                    # parent unless the current parent has no children.
-
-                    if parents[-1].childCount() > 0:
-                        parents.append(parents[-1].child(parents[-1].childCount() - 1))
-                        indentations.append(position)
-
-                else:
-                    while position < indentations[-1] and len(parents) > 0:
-                        parents.pop()
-                        indentations.pop()
-
-                # Append a new item to the current parent's list of children.
-                parents[-1].appendChild(TreeItem(columnData, parents[-1]))
-
-            number += 1
+            child.parentItem = parent
+            parent.appendChild(child)
 
 
 if __name__ == '__main__':
@@ -201,10 +187,7 @@ if __name__ == '__main__':
 
     app = QApplication(sys.argv)
 
-    f = QFile(':/default.txt')
-    f.open(QIODevice.ReadOnly)
-    model = TreeModel(f.readAll())
-    f.close()
+    model = TreeModel()
 
     view = QTreeView()
     view.setModel(model)
