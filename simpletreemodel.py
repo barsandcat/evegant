@@ -165,13 +165,12 @@ class TreeModel(QAbstractItemModel):
         marketGroups = {}
         for row in cursor:            
             groupID = row[0]
+            parentID = row[1]
             groupName = row[2]
-            print(groupName)
-            marketGroups[groupID] = TreeItem([groupName])
-            marketGroups[groupID].parentItem = row[1]
+            marketGroups[groupID] = TreeItem([groupName], parentID)
         
         for key, child in marketGroups.items():
-            parentID = child.parentItem
+            parentID = child.parent()
             if parentID:
                 parent = marketGroups[parentID]
             else:
