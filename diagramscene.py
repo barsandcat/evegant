@@ -159,8 +159,6 @@ class DiagramTextItem(QGraphicsTextItem):
         self.setFlag(QGraphicsItem.ItemIsSelectable)
 
     def itemChange(self, change, value):
-        if change == QGraphicsItem.ItemSelectedChange:
-            self.selectedChange.emit(self)
         return value
 
     def focusOutEvent(self, event):
@@ -258,8 +256,6 @@ class DiagramScene(QGraphicsScene):
 
     textInserted = pyqtSignal(QGraphicsTextItem)
 
-    itemSelected = pyqtSignal(QGraphicsItem)
-
     def __init__(self, itemMenu, parent=None):
         super(DiagramScene, self).__init__(parent)
 
@@ -269,9 +265,7 @@ class DiagramScene(QGraphicsScene):
         self.line = None
         self.textItem = None
         self.myItemColor = Qt.white
-        self.myTextColor = Qt.black
         self.myLineColor = Qt.black
-        self.myFont = QFont()
 
     def setLineColor(self, color):
         self.myLineColor = color
@@ -291,12 +285,6 @@ class DiagramScene(QGraphicsScene):
         if self.isItemChange(DiagramItem):
             item = self.selectedItems()[0]
             item.setBrush(self.myItemColor)
-
-    def setFont(self, font):
-        self.myFont = font
-        if self.isItemChange(DiagramTextItem):
-            item = self.selectedItems()[0]
-            item.setFont(self.myFont)
 
     def setMode(self, mode):
         self.myMode = mode
@@ -330,11 +318,9 @@ class DiagramScene(QGraphicsScene):
             self.addItem(self.line)
         elif self.myMode == self.InsertText:
             textItem = DiagramTextItem()
-            textItem.setFont(self.myFont)
             textItem.setTextInteractionFlags(Qt.TextEditorInteraction)
             textItem.setZValue(1000.0)
             textItem.lostFocus.connect(self.editorLostFocus)
-            textItem.selectedChange.connect(self.itemSelected)
             self.addItem(textItem)
             textItem.setDefaultTextColor(self.myTextColor)
             textItem.setPos(mouseEvent.scenePos())
@@ -399,7 +385,6 @@ class MainWindow(QMainWindow):
         self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
         self.scene.itemInserted.connect(self.itemInserted)
         self.scene.textInserted.connect(self.textInserted)
-        self.scene.itemSelected.connect(self.itemSelected)
 
         self.createToolbars()
 
@@ -489,12 +474,6 @@ class MainWindow(QMainWindow):
         self.buttonGroup.button(self.InsertTextButton).setChecked(False)
         self.scene.setMode(self.pointerTypeGroup.checkedId())
 
-    def currentFontChanged(self, font):
-        self.handleFontChange()
-
-    def fontSizeChanged(self, font):
-        self.handleFontChange()
-
     def sceneScaleChanged(self, scale):
         newScale = scale.left(scale.indexOf("%")).toDouble()[0] / 100.0
         oldMatrix = self.view.matrix()
@@ -531,27 +510,6 @@ class MainWindow(QMainWindow):
 
     def lineButtonTriggered(self):
         self.scene.setLineColor(QColor(self.lineAction.data()))
-
-    def handleFontChange(self):
-        font = self.fontCombo.currentFont()
-        font.setPointSize(self.fontSizeCombo.currentText().toInt()[0])
-        if self.boldAction.isChecked():
-            font.setWeight(QFont.Bold)
-        else:
-            font.setWeight(QFont.Normal)
-        font.setItalic(self.italicAction.isChecked())
-        font.setUnderline(self.underlineAction.isChecked())
-
-        self.scene.setFont(font)
-
-    def itemSelected(self, item):
-        font = item.font()
-        color = item.defaultTextColor()
-        self.fontCombo.setCurrentFont(font)
-        self.fontSizeCombo.setEditText(str(font.pointSize()))
-        self.boldAction.setChecked(font.weight() == QFont.Bold)
-        self.italicAction.setChecked(font.italic())
-        self.underlineAction.setChecked(font.underline())
 
     def about(self):
         QMessageBox.about(self, "About Diagram Scene",
@@ -633,19 +591,6 @@ class MainWindow(QMainWindow):
         self.exitAction = QAction("E&xit", self, shortcut="Ctrl+X",
                 statusTip="Quit Scenediagram example", triggered=self.close)
 
-        self.boldAction = QAction(QIcon(':/images/bold.png'),
-                "Bold", self, checkable=True, shortcut="Ctrl+B",
-                triggered=self.handleFontChange)
-
-        self.italicAction = QAction(QIcon(':/images/italic.png'),
-                "Italic", self, checkable=True, shortcut="Ctrl+I",
-                triggered=self.handleFontChange)
-
-        self.underlineAction = QAction(
-                QIcon(':/images/underline.png'), "Underline", self,
-                checkable=True, shortcut="Ctrl+U",
-                triggered=self.handleFontChange)
-
         self.aboutAction = QAction("A&bout", self, shortcut="Ctrl+B",
                 triggered=self.about)
 
@@ -668,28 +613,6 @@ class MainWindow(QMainWindow):
         self.editToolBar.addAction(self.toFrontAction)
         self.editToolBar.addAction(self.sendBackAction)
 
-        self.fontCombo = QFontComboBox()
-        self.fontCombo.currentFontChanged.connect(self.currentFontChanged)
-
-        self.fontSizeCombo = QComboBox()
-        self.fontSizeCombo.setEditable(True)
-        for i in range(8, 30, 2):
-            self.fontSizeCombo.addItem(str(i))
-        validator = QIntValidator(2, 64, self)
-        self.fontSizeCombo.setValidator(validator)
-        self.fontSizeCombo.currentIndexChanged.connect(self.fontSizeChanged)
-
-        self.fontColorToolButton = QToolButton()
-        self.fontColorToolButton.setPopupMode(QToolButton.MenuButtonPopup)
-        self.fontColorToolButton.setMenu(
-                self.createColorMenu(self.textColorChanged, Qt.black))
-        self.textAction = self.fontColorToolButton.menu().defaultAction()
-        self.fontColorToolButton.setIcon(
-                self.createColorToolButtonIcon(':/images/textpointer.png',
-                        Qt.black))
-        self.fontColorToolButton.setAutoFillBackground(True)
-        self.fontColorToolButton.clicked.connect(self.textButtonTriggered)
-
         self.fillColorToolButton = QToolButton()
         self.fillColorToolButton.setPopupMode(QToolButton.MenuButtonPopup)
         self.fillColorToolButton.setMenu(
@@ -710,15 +633,9 @@ class MainWindow(QMainWindow):
                         Qt.black))
         self.lineColorToolButton.clicked.connect(self.lineButtonTriggered)
 
-        self.textToolBar = self.addToolBar("Font")
-        self.textToolBar.addWidget(self.fontCombo)
-        self.textToolBar.addWidget(self.fontSizeCombo)
-        self.textToolBar.addAction(self.boldAction)
-        self.textToolBar.addAction(self.italicAction)
-        self.textToolBar.addAction(self.underlineAction)
+
 
         self.colorToolBar = self.addToolBar("Color")
-        self.colorToolBar.addWidget(self.fontColorToolButton)
         self.colorToolBar.addWidget(self.fillColorToolButton)
         self.colorToolBar.addWidget(self.lineColorToolButton)
 
