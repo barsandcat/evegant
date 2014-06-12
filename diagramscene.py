@@ -348,32 +348,6 @@ class MainWindow(QMainWindow):
     def pointerGroupClicked(self, i):
         self.scene.setMode(self.pointerTypeGroup.checkedId())
 
-    def bringToFront(self):
-        if not self.scene.selectedItems():
-            return
-
-        selectedItem = self.scene.selectedItems()[0]
-        overlapItems = selectedItem.collidingItems()
-
-        zValue = 0
-        for item in overlapItems:
-            if (item.zValue() >= zValue and isinstance(item, DiagramItem)):
-                zValue = item.zValue() + 0.1
-        selectedItem.setZValue(zValue)
-
-    def sendToBack(self):
-        if not self.scene.selectedItems():
-            return
-
-        selectedItem = self.scene.selectedItems()[0]
-        overlapItems = selectedItem.collidingItems()
-
-        zValue = 0
-        for item in overlapItems:
-            if (item.zValue() <= zValue and isinstance(item, DiagramItem)):
-                zValue = item.zValue() - 0.1
-        selectedItem.setZValue(zValue)
-
     def itemInserted(self, item):
         self.pointerTypeGroup.button(DiagramScene.MoveItem).setChecked(True)
         self.scene.setMode(self.pointerTypeGroup.checkedId())
@@ -407,16 +381,6 @@ class MainWindow(QMainWindow):
         self.toolBox.addItem(itemWidget, "Basic Flowchart Shapes")
 
     def createActions(self):
-        self.toFrontAction = QAction(
-                QIcon(':/images/bringtofront.png'), "Bring to &Front",
-                self, shortcut="Ctrl+F", statusTip="Bring item to front",
-                triggered=self.bringToFront)
-
-        self.sendBackAction = QAction(
-                QIcon(':/images/sendtoback.png'), "Send to &Back", self,
-                shortcut="Ctrl+B", statusTip="Send item to back",
-                triggered=self.sendToBack)
-
         self.deleteAction = QAction(QIcon(':/images/delete.png'),
                 "&Delete", self, shortcut="Delete",
                 statusTip="Delete item from diagram",
@@ -434,9 +398,6 @@ class MainWindow(QMainWindow):
 
         self.itemMenu = self.menuBar().addMenu("&Item")
         self.itemMenu.addAction(self.deleteAction)
-        self.itemMenu.addSeparator()
-        self.itemMenu.addAction(self.toFrontAction)
-        self.itemMenu.addAction(self.sendBackAction)
 
         self.aboutMenu = self.menuBar().addMenu("&Help")
         self.aboutMenu.addAction(self.aboutAction)
@@ -444,8 +405,6 @@ class MainWindow(QMainWindow):
     def createToolbars(self):
         self.editToolBar = self.addToolBar("Edit")
         self.editToolBar.addAction(self.deleteAction)
-        self.editToolBar.addAction(self.toFrontAction)
-        self.editToolBar.addAction(self.sendBackAction)
 
         pointerButton = QToolButton()
         pointerButton.setCheckable(True)
@@ -489,19 +448,6 @@ class MainWindow(QMainWindow):
         widget.setLayout(layout)
 
         return widget
-
-    def createColorToolButtonIcon(self, imageFile, color):
-        pixmap = QPixmap(50, 80)
-        pixmap.fill(Qt.transparent)
-        painter = QPainter(pixmap)
-        image = QPixmap(imageFile)
-        target = QRect(0, 0, 50, 60)
-        source = QRect(0, 0, 42, 42)
-        painter.fillRect(QRect(0, 60, 50, 80), color)
-        painter.drawPixmap(target, image, source)
-        painter.end()
-
-        return QIcon(pixmap)
 
 
 if __name__ == '__main__':
