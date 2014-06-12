@@ -329,7 +329,6 @@ class DiagramScene(QGraphicsScene):
 
 
 class MainWindow(QMainWindow):
-    InsertTextButton = 10
 
     def __init__(self):
         super(MainWindow, self).__init__()
@@ -354,25 +353,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(self.widget)
         self.setWindowTitle("Diagramscene")
-
-    def backgroundButtonGroupClicked(self, button):
-        buttons = self.backgroundButtonGroup.buttons()
-        for myButton in buttons:
-            if myButton != button:
-                button.setChecked(False)
-
-        text = button.text()
-        if text == "Blue Grid":
-            self.scene.setBackgroundBrush(QBrush(QPixmap(':/images/background1.png')))
-        elif text == "White Grid":
-            self.scene.setBackgroundBrush(QBrush(QPixmap(':/images/background2.png')))
-        elif text == "Gray Grid":
-            self.scene.setBackgroundBrush(QBrush(QPixmap(':/images/background3.png')))
-        else:
-            self.scene.setBackgroundBrush(QBrush(QPixmap(':/images/background4.png')))
-
-        self.scene.update()
-        self.view.update()
 
     def buttonGroupClicked(self, id):
         buttons = self.buttonGroup.buttons()
@@ -474,30 +454,10 @@ class MainWindow(QMainWindow):
         itemWidget = QWidget()
         itemWidget.setLayout(layout)
 
-        self.backgroundButtonGroup = QButtonGroup()
-        self.backgroundButtonGroup.buttonClicked.connect(self.backgroundButtonGroupClicked)
-
-        backgroundLayout = QGridLayout()
-        backgroundLayout.addWidget(self.createBackgroundCellWidget("Blue Grid",
-                ':/images/background1.png'), 0, 0)
-        backgroundLayout.addWidget(self.createBackgroundCellWidget("White Grid",
-                ':/images/background2.png'), 0, 1)
-        backgroundLayout.addWidget(self.createBackgroundCellWidget("Gray Grid",
-                ':/images/background3.png'), 1, 0)
-        backgroundLayout.addWidget(self.createBackgroundCellWidget("No Grid",
-                ':/images/background4.png'), 1, 1)
-
-        backgroundLayout.setRowStretch(2, 10)
-        backgroundLayout.setColumnStretch(2, 10)
-
-        backgroundWidget = QWidget()
-        backgroundWidget.setLayout(backgroundLayout)
-
         self.toolBox = QToolBox()
         self.toolBox.setSizePolicy(QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Ignored))
         self.toolBox.setMinimumWidth(itemWidget.sizeHint().width())
         self.toolBox.addItem(itemWidget, "Basic Flowchart Shapes")
-        self.toolBox.addItem(backgroundWidget, "Backgrounds")
 
     def createActions(self):
         self.toFrontAction = QAction(
@@ -540,32 +500,6 @@ class MainWindow(QMainWindow):
         self.editToolBar.addAction(self.toFrontAction)
         self.editToolBar.addAction(self.sendBackAction)
 
-        self.fillColorToolButton = QToolButton()
-        self.fillColorToolButton.setPopupMode(QToolButton.MenuButtonPopup)
-        self.fillColorToolButton.setMenu(
-                self.createColorMenu(self.itemColorChanged, Qt.white))
-        self.fillAction = self.fillColorToolButton.menu().defaultAction()
-        self.fillColorToolButton.setIcon(
-                self.createColorToolButtonIcon(':/images/floodfill.png',
-                        Qt.white))
-        self.fillColorToolButton.clicked.connect(self.fillButtonTriggered)
-
-        self.lineColorToolButton = QToolButton()
-        self.lineColorToolButton.setPopupMode(QToolButton.MenuButtonPopup)
-        self.lineColorToolButton.setMenu(
-                self.createColorMenu(self.lineColorChanged, Qt.black))
-        self.lineAction = self.lineColorToolButton.menu().defaultAction()
-        self.lineColorToolButton.setIcon(
-                self.createColorToolButtonIcon(':/images/linecolor.png',
-                        Qt.black))
-        self.lineColorToolButton.clicked.connect(self.lineButtonTriggered)
-
-
-
-        self.colorToolBar = self.addToolBar("Color")
-        self.colorToolBar.addWidget(self.fillColorToolButton)
-        self.colorToolBar.addWidget(self.lineColorToolButton)
-
         pointerButton = QToolButton()
         pointerButton.setCheckable(True)
         pointerButton.setChecked(True)
@@ -590,23 +524,6 @@ class MainWindow(QMainWindow):
         self.pointerToolbar.addWidget(linePointerButton)
         self.pointerToolbar.addWidget(self.sceneScaleCombo)
 
-    def createBackgroundCellWidget(self, text, image):
-        button = QToolButton()
-        button.setText(text)
-        button.setIcon(QIcon(image))
-        button.setIconSize(QSize(50, 50))
-        button.setCheckable(True)
-        self.backgroundButtonGroup.addButton(button)
-
-        layout = QGridLayout()
-        layout.addWidget(button, 0, 0, Qt.AlignHCenter)
-        layout.addWidget(QLabel(text), 1, 0, Qt.AlignCenter)
-
-        widget = QWidget()
-        widget.setLayout(layout)
-
-        return widget
-
     def createCellWidget(self, text, diagramType):
         item = DiagramItem(diagramType, self.itemMenu)
         icon = QIcon(item.image())
@@ -626,20 +543,6 @@ class MainWindow(QMainWindow):
 
         return widget
 
-    def createColorMenu(self, slot, defaultColor):
-        colors = [Qt.black, Qt.white, Qt.red, Qt.blue, Qt.yellow]
-        names = ["black", "white", "red", "blue", "yellow"]
-
-        colorMenu = QMenu(self)
-        for color, name in zip(colors, names):
-            action = QAction(self.createColorIcon(color), name, self,
-                    triggered=slot)
-            action.setData(QColor(color)) 
-            colorMenu.addAction(action)
-            if color == defaultColor:
-                colorMenu.setDefaultAction(action)
-        return colorMenu
-
     def createColorToolButtonIcon(self, imageFile, color):
         pixmap = QPixmap(50, 80)
         pixmap.fill(Qt.transparent)
@@ -649,15 +552,6 @@ class MainWindow(QMainWindow):
         source = QRect(0, 0, 42, 42)
         painter.fillRect(QRect(0, 60, 50, 80), color)
         painter.drawPixmap(target, image, source)
-        painter.end()
-
-        return QIcon(pixmap)
-
-    def createColorIcon(self, color):
-        pixmap = QPixmap(20, 20)
-        painter = QPainter(pixmap)
-        painter.setPen(Qt.NoPen)
-        painter.fillRect(QRect(0, 0, 20, 20), color)
         painter.end()
 
         return QIcon(pixmap)
