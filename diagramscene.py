@@ -146,32 +146,6 @@ class Arrow(QGraphicsLineItem):
             myLine.translate(0,-8.0)
             painter.drawLine(myLine)
 
-
-class DiagramTextItem(QGraphicsTextItem):
-    lostFocus = pyqtSignal(QGraphicsTextItem)
-
-    selectedChange = pyqtSignal(QGraphicsItem)
-
-    def __init__(self, parent=None, scene=None):
-        super(DiagramTextItem, self).__init__(parent, scene)
-
-        self.setFlag(QGraphicsItem.ItemIsMovable)
-        self.setFlag(QGraphicsItem.ItemIsSelectable)
-
-    def itemChange(self, change, value):
-        return value
-
-    def focusOutEvent(self, event):
-        self.setTextInteractionFlags(Qt.NoTextInteraction)
-        self.lostFocus.emit(self)
-        super(DiagramTextItem, self).focusOutEvent(event)
-
-    def mouseDoubleClickEvent(self, event):
-        if self.textInteractionFlags() == Qt.NoTextInteraction:
-            self.setTextInteractionFlags(Qt.TextEditorInteraction)
-        super(DiagramTextItem, self).mouseDoubleClickEvent(event)
-
-
 class DiagramItem(QGraphicsPolygonItem):
     Step, Conditional, StartEnd, Io = range(4)
 
@@ -250,11 +224,9 @@ class DiagramItem(QGraphicsPolygonItem):
 
 
 class DiagramScene(QGraphicsScene):
-    InsertItem, InsertLine, InsertText, MoveItem  = range(4)
+    InsertItem, InsertLine, MoveItem  = range(3)
 
     itemInserted = pyqtSignal(DiagramItem)
-
-    textInserted = pyqtSignal(QGraphicsTextItem)
 
     def __init__(self, itemMenu, parent=None):
         super(DiagramScene, self).__init__(parent)
@@ -273,12 +245,6 @@ class DiagramScene(QGraphicsScene):
             item = self.selectedItems()[0]
             item.setColor(self.myLineColor)
             self.update()
-
-    def setTextColor(self, color):
-        self.myTextColor = color
-        if self.isItemChange(DiagramTextItem):
-            item = self.selectedItems()[0]
-            item.setDefaultTextColor(self.myTextColor)
 
     def setItemColor(self, color):
         self.myItemColor = color
@@ -316,15 +282,6 @@ class DiagramScene(QGraphicsScene):
                     mouseEvent.scenePos()))
             self.line.setPen(QPen(self.myLineColor, 2))
             self.addItem(self.line)
-        elif self.myMode == self.InsertText:
-            textItem = DiagramTextItem()
-            textItem.setTextInteractionFlags(Qt.TextEditorInteraction)
-            textItem.setZValue(1000.0)
-            textItem.lostFocus.connect(self.editorLostFocus)
-            self.addItem(textItem)
-            textItem.setDefaultTextColor(self.myTextColor)
-            textItem.setPos(mouseEvent.scenePos())
-            self.textInserted.emit(textItem)
 
         super(DiagramScene, self).mousePressEvent(mouseEvent)
 
@@ -384,7 +341,6 @@ class MainWindow(QMainWindow):
         self.scene = DiagramScene(self.itemMenu)
         self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
         self.scene.itemInserted.connect(self.itemInserted)
-        self.scene.textInserted.connect(self.textInserted)
 
         self.createToolbars()
 
@@ -424,11 +380,9 @@ class MainWindow(QMainWindow):
             if self.buttonGroup.button(id) != button:
                 button.setChecked(False)
 
-        if id == self.InsertTextButton:
-            self.scene.setMode(DiagramScene.InsertText)
-        else:
-            self.scene.setItemType(id)
-            self.scene.setMode(DiagramScene.InsertItem)
+     
+        self.scene.setItemType(id)
+        self.scene.setMode(DiagramScene.InsertItem)
 
     def deleteItem(self):
         for item in self.scene.selectedItems():
@@ -470,23 +424,12 @@ class MainWindow(QMainWindow):
         self.scene.setMode(self.pointerTypeGroup.checkedId())
         self.buttonGroup.button(item.diagramType).setChecked(False)
 
-    def textInserted(self, item):
-        self.buttonGroup.button(self.InsertTextButton).setChecked(False)
-        self.scene.setMode(self.pointerTypeGroup.checkedId())
-
     def sceneScaleChanged(self, scale):
         newScale = scale.left(scale.indexOf("%")).toDouble()[0] / 100.0
         oldMatrix = self.view.matrix()
         self.view.resetMatrix()
         self.view.translate(oldMatrix.dx(), oldMatrix.dy())
         self.view.scale(newScale, newScale)
-
-    def textColorChanged(self):
-        self.textAction = self.sender()
-        self.fontColorToolButton.setIcon(
-                self.createColorToolButtonIcon(':/images/textpointer.png',
-                        QColor(self.textAction.data())))
-        self.textButtonTriggered()
 
     def itemColorChanged(self):
         self.fillAction = self.sender()
@@ -501,9 +444,6 @@ class MainWindow(QMainWindow):
                 self.createColorToolButtonIcon(':/images/linecolor.png',
                         QColor(self.lineAction.data())))
         self.lineButtonTriggered()
-
-    def textButtonTriggered(self):
-        self.scene.setTextColor(QColor(self.textAction.data()))
 
     def fillButtonTriggered(self):
         self.scene.setItemColor(QColor(self.fillAction.data()))
@@ -527,19 +467,6 @@ class MainWindow(QMainWindow):
                 1)
         layout.addWidget(self.createCellWidget("Input/Output", DiagramItem.Io),
                 1, 0)
-
-        textButton = QToolButton()
-        textButton.setCheckable(True)
-        self.buttonGroup.addButton(textButton, self.InsertTextButton)
-        textButton.setIcon(QIcon(QPixmap(':/images/textpointer.png').scaled(30, 30)))
-        textButton.setIconSize(QSize(50, 50))
-
-        textLayout = QGridLayout()
-        textLayout.addWidget(textButton, 0, 0, Qt.AlignHCenter)
-        textLayout.addWidget(QLabel("Text"), 1, 0, Qt.AlignCenter)
-        textWidget = QWidget()
-        textWidget.setLayout(textLayout)
-        layout.addWidget(textWidget, 1, 1)
 
         layout.setRowStretch(3, 10)
         layout.setColumnStretch(2, 10)
