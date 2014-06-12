@@ -147,40 +147,20 @@ class Arrow(QGraphicsLineItem):
             painter.drawLine(myLine)
 
 class DiagramItem(QGraphicsPolygonItem):
-    Step, Conditional, StartEnd, Io = range(4)
 
-    def __init__(self, diagramType, contextMenu, parent=None):
+    def __init__(self, contextMenu, parent=None):
         super(DiagramItem, self).__init__(parent)
 
         self.arrows = []
-
-        self.diagramType = diagramType
+		
         self.contextMenu = contextMenu
 
         path = QPainterPath()
-        if self.diagramType == self.StartEnd:
-            path.moveTo(200, 50)
-            path.arcTo(150, 0, 50, 50, 0, 90)
-            path.arcTo(50, 0, 50, 50, 90, 90)
-            path.arcTo(50, 50, 50, 50, 180, 90)
-            path.arcTo(150, 50, 50, 50, 270, 90)
-            path.lineTo(200, 25)
-            self.myPolygon = path.toFillPolygon()
-        elif self.diagramType == self.Conditional:
-            self.myPolygon = QPolygonF([
-                    QPointF(-100, 0), QPointF(0, 100),
-                    QPointF(100, 0), QPointF(0, -100),
-                    QPointF(-100, 0)])
-        elif self.diagramType == self.Step:
-            self.myPolygon = QPolygonF([
-                    QPointF(-100, -100), QPointF(100, -100),
-                    QPointF(100, 100), QPointF(-100, 100),
-                    QPointF(-100, -100)])
-        else:
-            self.myPolygon = QPolygonF([
-                    QPointF(-120, -80), QPointF(-70, 80),
-                    QPointF(120, 80), QPointF(70, -80),
-                    QPointF(-120, -80)])
+
+        self.myPolygon = QPolygonF([
+                QPointF(-120, -80), QPointF(-70, 80),
+                QPointF(120, 80), QPointF(70, -80),
+                QPointF(-120, -80)])
 
         self.setPolygon(self.myPolygon)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -233,7 +213,6 @@ class DiagramScene(QGraphicsScene):
 
         self.myItemMenu = itemMenu
         self.myMode = self.MoveItem
-        self.myItemType = DiagramItem.Step
         self.line = None
         self.textItem = None
         self.myItemColor = Qt.white
@@ -255,9 +234,6 @@ class DiagramScene(QGraphicsScene):
     def setMode(self, mode):
         self.myMode = mode
 
-    def setItemType(self, type):
-        self.myItemType = type
-
     def editorLostFocus(self, item):
         cursor = item.textCursor()
         cursor.clearSelection()
@@ -272,7 +248,7 @@ class DiagramScene(QGraphicsScene):
             return
 
         if self.myMode == self.InsertItem:
-            item = DiagramItem(self.myItemType, self.myItemMenu)
+            item = DiagramItem(self.myItemMenu)
             item.setBrush(self.myItemColor)
             self.addItem(item)
             item.setPos(mouseEvent.scenePos())
@@ -361,7 +337,6 @@ class MainWindow(QMainWindow):
                 button.setChecked(False)
 
      
-        self.scene.setItemType(id)
         self.scene.setMode(DiagramScene.InsertItem)
 
     def deleteItem(self):
@@ -411,26 +386,6 @@ class MainWindow(QMainWindow):
         self.view.translate(oldMatrix.dx(), oldMatrix.dy())
         self.view.scale(newScale, newScale)
 
-    def itemColorChanged(self):
-        self.fillAction = self.sender()
-        self.fillColorToolButton.setIcon(
-                self.createColorToolButtonIcon( ':/images/floodfill.png',
-                        QColor(self.fillAction.data())))
-        self.fillButtonTriggered()
-
-    def lineColorChanged(self):
-        self.lineAction = self.sender()
-        self.lineColorToolButton.setIcon(
-                self.createColorToolButtonIcon(':/images/linecolor.png',
-                        QColor(self.lineAction.data())))
-        self.lineButtonTriggered()
-
-    def fillButtonTriggered(self):
-        self.scene.setItemColor(QColor(self.fillAction.data()))
-
-    def lineButtonTriggered(self):
-        self.scene.setLineColor(QColor(self.lineAction.data()))
-
     def about(self):
         QMessageBox.about(self, "About Diagram Scene",
                 "The <b>Diagram Scene</b> example shows use of the graphics framework.")
@@ -441,15 +396,7 @@ class MainWindow(QMainWindow):
         self.buttonGroup.buttonClicked[int].connect(self.buttonGroupClicked)
 
         layout = QGridLayout()
-        layout.addWidget(self.createCellWidget("Conditional", DiagramItem.Conditional),
-                0, 0)
-        layout.addWidget(self.createCellWidget("Process", DiagramItem.Step), 0,
-                1)
-        layout.addWidget(self.createCellWidget("Input/Output", DiagramItem.Io),
-                1, 0)
-
-        layout.setRowStretch(3, 10)
-        layout.setColumnStretch(2, 10)
+        layout.addWidget(self.createCellWidget("Process"), 0, 1)
 
         itemWidget = QWidget()
         itemWidget.setLayout(layout)
@@ -524,15 +471,15 @@ class MainWindow(QMainWindow):
         self.pointerToolbar.addWidget(linePointerButton)
         self.pointerToolbar.addWidget(self.sceneScaleCombo)
 
-    def createCellWidget(self, text, diagramType):
-        item = DiagramItem(diagramType, self.itemMenu)
+    def createCellWidget(self, text):
+        item = DiagramItem(self.itemMenu)
         icon = QIcon(item.image())
 
         button = QToolButton()
         button.setIcon(icon)
         button.setIconSize(QSize(50, 50))
         button.setCheckable(True)
-        self.buttonGroup.addButton(button, diagramType)
+        self.buttonGroup.addButton(button)
 
         layout = QGridLayout()
         layout.addWidget(button, 0, 0, Qt.AlignHCenter)
