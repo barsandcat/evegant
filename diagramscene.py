@@ -301,6 +301,10 @@ class MainWindow(QMainWindow):
 			if self.buttonGroup.button(id) != button:
 				button.setChecked(False)
 
+	def AddNewItem(self):
+		print("!!!!!!!!!")
+		pass
+
 	def deleteItem(self):
 		for item in self.scene.selectedItems():
 			if isinstance(item, DiagramItem):
@@ -327,8 +331,14 @@ class MainWindow(QMainWindow):
 		self.buttonGroup.setExclusive(False)
 		self.buttonGroup.buttonClicked[int].connect(self.buttonGroupClicked)
 
+		button = QToolButton()
+		button.setIconSize(QSize(50, 50))
+		button.setCheckable(False)
+		button.clicked.connect(self.AddNewItem)
+		self.buttonGroup.addButton(button)
+
 		layout = QGridLayout()
-		layout.addWidget(self.createCellWidget("Process"), 0, 1)
+		layout.addWidget(button, 0, 1)
 
 		itemWidget = QWidget()
 		itemWidget.setLayout(layout)
