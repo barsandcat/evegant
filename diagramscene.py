@@ -204,27 +204,10 @@ class DiagramScene(QGraphicsScene):
 	def __init__(self, parent=None):
 		super(DiagramScene, self).__init__(parent)
 
-		self.myMode = self.MoveItem
 		self.line = None
 		self.textItem = None
 		self.myItemColor = Qt.white
 		self.myLineColor = Qt.black
-
-	def setLineColor(self, color):
-		self.myLineColor = color
-		if self.isItemChange(Arrow):
-			item = self.selectedItems()[0]
-			item.setColor(self.myLineColor)
-			self.update()
-
-	def setItemColor(self, color):
-		self.myItemColor = color
-		if self.isItemChange(DiagramItem):
-			item = self.selectedItems()[0]
-			item.setBrush(self.myItemColor)
-
-	def setMode(self, mode):
-		self.myMode = mode
 
 	def editorLostFocus(self, item):
 		cursor = item.textCursor()
@@ -239,29 +222,19 @@ class DiagramScene(QGraphicsScene):
 		if (mouseEvent.button() != Qt.LeftButton):
 			return
 
-		if self.myMode == self.InsertItem:
-			item = DiagramItem()
-			item.setBrush(self.myItemColor)
-			self.addItem(item)
-			item.setPos(mouseEvent.scenePos())
-			self.itemInserted.emit(item)
-		elif self.myMode == self.InsertLine:
-			self.line = QGraphicsLineItem(QLineF(mouseEvent.scenePos(),
-					mouseEvent.scenePos()))
-			self.line.setPen(QPen(self.myLineColor, 2))
-			self.addItem(self.line)
-
+		item = DiagramItem()
+		item.setBrush(self.myItemColor)
+		self.addItem(item)
+		item.setPos(mouseEvent.scenePos())
+		self.itemInserted.emit(item)
+		
 		super(DiagramScene, self).mousePressEvent(mouseEvent)
 
 	def mouseMoveEvent(self, mouseEvent):
-		if self.myMode == self.InsertLine and self.line:
-			newLine = QLineF(self.line.line().p1(), mouseEvent.scenePos())
-			self.line.setLine(newLine)
-		elif self.myMode == self.MoveItem:
-			super(DiagramScene, self).mouseMoveEvent(mouseEvent)
+		super(DiagramScene, self).mouseMoveEvent(mouseEvent)
 
 	def mouseReleaseEvent(self, mouseEvent):
-		if self.line and self.myMode == self.InsertLine:
+		if self.line:
 			startItems = self.items(self.line.line().p1())
 			if len(startItems) and startItems[0] == self.line:
 				startItems.pop(0)
@@ -328,21 +301,14 @@ class MainWindow(QMainWindow):
 			if self.buttonGroup.button(id) != button:
 				button.setChecked(False)
 
-	 
-		self.scene.setMode(DiagramScene.InsertItem)
-
 	def deleteItem(self):
 		for item in self.scene.selectedItems():
 			if isinstance(item, DiagramItem):
 				item.removeArrows()
 			self.scene.removeItem(item)
 
-	def pointerGroupClicked(self, i):
-		self.scene.setMode(self.pointerTypeGroup.checkedId())
-
 	def itemInserted(self, item):
 		self.pointerTypeGroup.button(DiagramScene.MoveItem).setChecked(True)
-		self.scene.setMode(self.pointerTypeGroup.checkedId())
 		self.buttonGroup.button(item.diagramType).setChecked(False)
 
 	def sceneScaleChanged(self, scale):
@@ -407,7 +373,6 @@ class MainWindow(QMainWindow):
 		self.pointerTypeGroup.addButton(pointerButton, DiagramScene.MoveItem)
 		self.pointerTypeGroup.addButton(linePointerButton,
 				DiagramScene.InsertLine)
-		self.pointerTypeGroup.buttonClicked[int].connect(self.pointerGroupClicked)
 
 		self.sceneScaleCombo = QComboBox()
 		self.sceneScaleCombo.addItems(["50%", "75%", "100%", "125%", "150%"])
@@ -420,23 +385,13 @@ class MainWindow(QMainWindow):
 		self.pointerToolbar.addWidget(self.sceneScaleCombo)
 
 	def createCellWidget(self, text):
-		item = DiagramItem()
-		icon = QIcon(item.image())
 
 		button = QToolButton()
-		button.setIcon(icon)
 		button.setIconSize(QSize(50, 50))
-		button.setCheckable(True)
+		button.setCheckable(False)
 		self.buttonGroup.addButton(button)
 
-		layout = QGridLayout()
-		layout.addWidget(button, 0, 0, Qt.AlignHCenter)
-		layout.addWidget(QLabel(text), 1, 0, Qt.AlignCenter)
-
-		widget = QWidget()
-		widget.setLayout(layout)
-
-		return widget
+		return button
 
 
 if __name__ == '__main__':
