@@ -205,9 +205,6 @@ class DiagramScene(QGraphicsScene):
 		super(DiagramScene, self).__init__(parent)
 
 		self.line = None
-		self.textItem = None
-		self.myItemColor = Qt.white
-		self.myLineColor = Qt.black
 
 	def editorLostFocus(self, item):
 		cursor = item.textCursor()
@@ -217,18 +214,6 @@ class DiagramScene(QGraphicsScene):
 		if item.toPlainText():
 			self.removeItem(item)
 			item.deleteLater()
-
-	def mousePressEvent(self, mouseEvent):
-		if (mouseEvent.button() != Qt.LeftButton):
-			return
-
-		item = DiagramItem()
-		item.setBrush(self.myItemColor)
-		self.addItem(item)
-		item.setPos(mouseEvent.scenePos())
-		self.itemInserted.emit(item)
-		
-		super(DiagramScene, self).mousePressEvent(mouseEvent)
 
 	def mouseMoveEvent(self, mouseEvent):
 		super(DiagramScene, self).mouseMoveEvent(mouseEvent)
@@ -252,7 +237,7 @@ class DiagramScene(QGraphicsScene):
 				startItem = startItems[0]
 				endItem = endItems[0]
 				arrow = Arrow(startItem, endItem)
-				arrow.setColor(self.myLineColor)
+				arrow.setColor(Qt.black)
 				startItem.addArrow(arrow)
 				endItem.addArrow(arrow)
 				arrow.setZValue(-1000.0)
@@ -267,6 +252,13 @@ class DiagramScene(QGraphicsScene):
 			if isinstance(item, type):
 				return True
 		return False
+	
+	def AddNewItem(self):
+		item = DiagramItem()
+		item.setBrush(Qt.white)
+		self.addItem(item)
+		item.setPos(QPointF(2500, 2500))
+		self.itemInserted.emit(item)
 
 
 class MainWindow(QMainWindow):
@@ -274,13 +266,15 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
+		self.scene = DiagramScene()
+		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
+		self.scene.itemInserted.connect(self.itemInserted)
+
+		
 		self.createActions()
 		self.createMenus()
 		self.createToolBox()
 
-		self.scene = DiagramScene()
-		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
-		self.scene.itemInserted.connect(self.itemInserted)
 
 		self.createToolbars()
 
@@ -301,9 +295,7 @@ class MainWindow(QMainWindow):
 			if self.buttonGroup.button(id) != button:
 				button.setChecked(False)
 
-	def AddNewItem(self):
-		print("!!!!!!!!!")
-		pass
+
 
 	def deleteItem(self):
 		for item in self.scene.selectedItems():
@@ -334,7 +326,7 @@ class MainWindow(QMainWindow):
 		button = QToolButton()
 		button.setIconSize(QSize(50, 50))
 		button.setCheckable(False)
-		button.clicked.connect(self.AddNewItem)
+		button.clicked.connect(self.scene.AddNewItem)
 		self.buttonGroup.addButton(button)
 
 		layout = QGridLayout()
@@ -393,15 +385,6 @@ class MainWindow(QMainWindow):
 		self.pointerToolbar.addWidget(pointerButton)
 		self.pointerToolbar.addWidget(linePointerButton)
 		self.pointerToolbar.addWidget(self.sceneScaleCombo)
-
-	def createCellWidget(self, text):
-
-		button = QToolButton()
-		button.setIconSize(QSize(50, 50))
-		button.setCheckable(False)
-		self.buttonGroup.addButton(button)
-
-		return button
 
 
 if __name__ == '__main__':
