@@ -1,8 +1,13 @@
 
+from ProductionScheme import ProductionScheme
+from ProductionProcess import ProductionProcess
 
 class ProductionLine:
-	def __init__():
+	def __init__(self, rootProcessScheme):
+		self.rootProcess = ProductionProcess(rootProcessScheme)
+
+	def AddProcess():
 		pass
-		
-	def AddProductionScheme():
-		pass
+
+	def GetAviableSchemes():
+		return []

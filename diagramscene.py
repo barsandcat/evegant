@@ -40,6 +40,8 @@
 ##
 #############################################################################
 
+from ProductionScheme import ProductionScheme
+from ProductionLine import ProductionLine
 
 import math
 
@@ -199,15 +201,30 @@ class DiagramItem(QGraphicsPolygonItem):
 class DiagramScene(QGraphicsScene):
 	InsertItem, InsertLine, MoveItem  = range(3)
 
-	def __init__(self, parent=None):
-		super(DiagramScene, self).__init__(parent)
+	def __init__(self, aProductionLine):
+		super(DiagramScene, self).__init__(None)
 
-		self.line = None
-		item = DiagramItem()
-		self.addItem(item)
-		item.setPos(QPointF(2500, 2500))
-		self.prevItem = item
+		self.productionLine = aProductionLine
+		self.Update()
 		
+	def Update(self):
+		self.clear()
+
+		queue = []
+		done = set()
+		
+		queue.append(self.productionLine.rootProcess)
+
+		while queue:		
+			process = queue.pop(0)
+			if process not in done:
+				done.add(process)				
+				item = DiagramItem()
+				self.addItem(item)
+				item.setPos(QPointF(2500, 2500))
+				
+				queue.extend(process.inputs)
+
 
 	def editorLostFocus(self, item):
 		cursor = item.textCursor()
@@ -217,35 +234,6 @@ class DiagramScene(QGraphicsScene):
 		if item.toPlainText():
 			self.removeItem(item)
 			item.deleteLater()
-
-	def mouseReleaseEvent(self, mouseEvent):
-		if self.line:
-			startItems = self.items(self.line.line().p1())
-			if len(startItems) and startItems[0] == self.line:
-				startItems.pop(0)
-			endItems = self.items(self.line.line().p2())
-			if len(endItems) and endItems[0] == self.line:
-				endItems.pop(0)
-
-			self.removeItem(self.line)
-			self.line = None
-
-			if len(startItems) and len(endItems) and \
-					isinstance(startItems[0], DiagramItem) and \
-					isinstance(endItems[0], DiagramItem) and \
-					startItems[0] != endItems[0]:
-				startItem = startItems[0]
-				endItem = endItems[0]
-				arrow = Arrow(startItem, endItem)
-				arrow.setColor(Qt.black)
-				startItem.addArrow(arrow)
-				endItem.addArrow(arrow)
-
-				self.addItem(arrow)
-				arrow.updatePosition()
-
-		self.line = None
-		super(DiagramScene, self).mouseReleaseEvent(mouseEvent)
 
 	def isItemChange(self, type):
 		for item in self.selectedItems():
@@ -270,7 +258,9 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
-		self.scene = DiagramScene()
+		self.productionLine = ProductionLine(ProductionScheme(1, 2, 3))
+
+		self.scene = DiagramScene(self.productionLine)
 		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
 		
 		self.createActions()
