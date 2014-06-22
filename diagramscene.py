@@ -203,6 +203,10 @@ class DiagramScene(QGraphicsScene):
 		super(DiagramScene, self).__init__(parent)
 
 		self.line = None
+		item = DiagramItem()
+		self.addItem(item)
+		item.setPos(QPointF(2500, 2500))
+		self.prevItem = item
 		
 
 	def editorLostFocus(self, item):
@@ -236,7 +240,7 @@ class DiagramScene(QGraphicsScene):
 				arrow.setColor(Qt.black)
 				startItem.addArrow(arrow)
 				endItem.addArrow(arrow)
-				arrow.setZValue(-1000.0)
+
 				self.addItem(arrow)
 				arrow.updatePosition()
 
@@ -252,11 +256,17 @@ class DiagramScene(QGraphicsScene):
 	def AddNewItem(self):
 		item = DiagramItem()
 		self.addItem(item)
-		item.setPos(QPointF(2500, 2500))
+		item.setPos(QPointF(2300, 2500))
+		arrow = Arrow(item, self.prevItem)
+		item.addArrow(arrow)
+		self.prevItem.addArrow(arrow)
+		arrow.setZValue(-1000.0)
+		self.addItem(arrow)
+		arrow.updatePosition()
 
 
 class MainWindow(QMainWindow):
-
+ 
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
