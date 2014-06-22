@@ -199,12 +199,11 @@ class DiagramItem(QGraphicsPolygonItem):
 class DiagramScene(QGraphicsScene):
 	InsertItem, InsertLine, MoveItem  = range(3)
 
-	itemInserted = pyqtSignal(DiagramItem)
-
 	def __init__(self, parent=None):
 		super(DiagramScene, self).__init__(parent)
 
 		self.line = None
+		
 
 	def editorLostFocus(self, item):
 		cursor = item.textCursor()
@@ -214,9 +213,6 @@ class DiagramScene(QGraphicsScene):
 		if item.toPlainText():
 			self.removeItem(item)
 			item.deleteLater()
-
-	def mouseMoveEvent(self, mouseEvent):
-		super(DiagramScene, self).mouseMoveEvent(mouseEvent)
 
 	def mouseReleaseEvent(self, mouseEvent):
 		if self.line:
@@ -255,10 +251,8 @@ class DiagramScene(QGraphicsScene):
 	
 	def AddNewItem(self):
 		item = DiagramItem()
-		item.setBrush(Qt.white)
 		self.addItem(item)
 		item.setPos(QPointF(2500, 2500))
-		self.itemInserted.emit(item)
 
 
 class MainWindow(QMainWindow):
@@ -268,8 +262,6 @@ class MainWindow(QMainWindow):
 
 		self.scene = DiagramScene()
 		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
-		self.scene.itemInserted.connect(self.itemInserted)
-
 		
 		self.createActions()
 		self.createMenus()
@@ -303,9 +295,6 @@ class MainWindow(QMainWindow):
 				item.removeArrows()
 			self.scene.removeItem(item)
 
-	def itemInserted(self, item):
-		self.pointerTypeGroup.button(DiagramScene.MoveItem).setChecked(True)
-		self.buttonGroup.button(item.diagramType).setChecked(False)
 
 	def sceneScaleChanged(self, scale):
 		newScale = scale.left(scale.indexOf("%")).toDouble()[0] / 100.0
