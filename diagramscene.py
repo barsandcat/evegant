@@ -229,12 +229,13 @@ class DiagramScene(QGraphicsScene):
 			process = queue.pop(0)
 			if process not in done:
 				done.add(process)				
-				item = DiagramItem()
-				self.addItem(item)
-				item.setPos(QPointF(2500, 2500))
-				
+				self.AddProcess(2500, 2500)
 				queue.extend(process.inputs)
 
+	def AddProcess(self, x, y):
+		item = DiagramItem()
+		self.addItem(item)
+		item.setPos(QPointF(x, y))
 
 	def editorLostFocus(self, item):
 		cursor = item.textCursor()
