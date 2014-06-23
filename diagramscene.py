@@ -58,6 +58,16 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 import diagramscene_rc
 
 
+
+import unittest
+
+class TestProductionLineScene(unittest.TestCase):
+
+    def test_fail(self):
+        self.assertTrue(False)
+
+
+
 class Arrow(QGraphicsLineItem):
 	def __init__(self, startItem, endItem, parent=None, scene=None):
 		super(Arrow, self).__init__(parent)
