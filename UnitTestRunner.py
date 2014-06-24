@@ -3,5 +3,6 @@
 import unittest
 
 from diagramscene import TestProductionLineScene
+from ProductionLine import TestProductionLine
 
 unittest.main()
