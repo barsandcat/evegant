@@ -60,13 +60,30 @@ import diagramscene_rc
 
 
 import unittest
+import unittest.mock
 
 class TestProductionLineScene(unittest.TestCase):
 
-    def test_fail(self):
-        self.assertTrue(False)
+	def test_FillSceneOnlyRoot(self):
+		productionLine = ProductionLine(ProductionScheme(1, 2, 3))
+		sceneMock = unittest.mock.Mock()
+		FillScene(sceneMock, productionLine.rootProcess)
+		assert sceneMock.clear.called
+		assert sceneMock.AddProcess.called
 
 
+def FillScene(scene, rootProcess):
+	scene.clear()
+	queue = []
+	done = set()
+	
+	queue.append(rootProcess)
+	while queue:		
+		process = queue.pop(0)
+		if process not in done:
+			done.add(process)				
+			scene.AddProcess(2500, 2500)
+			queue.extend(process.inputs)
 
 class Arrow(QGraphicsLineItem):
 	def __init__(self, startItem, endItem, parent=None, scene=None):
@@ -215,23 +232,8 @@ class DiagramScene(QGraphicsScene):
 		super(DiagramScene, self).__init__(None)
 
 		self.productionLine = aProductionLine
-		self.Update()
+		FillScene(self, self.productionLine.rootProcess)
 		
-	def Update(self):
-		self.clear()
-
-		queue = []
-		done = set()
-		
-		queue.append(self.productionLine.rootProcess)
-
-		while queue:		
-			process = queue.pop(0)
-			if process not in done:
-				done.add(process)				
-				self.AddProcess(2500, 2500)
-				queue.extend(process.inputs)
-
 	def AddProcess(self, x, y):
 		item = DiagramItem()
 		self.addItem(item)
