@@ -271,7 +271,7 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
-		self.productionLine = ProductionLine(ProductionScheme(1, 2, 3))
+		self.productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 
 		self.scene = DiagramScene(self.productionLine)
 		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
