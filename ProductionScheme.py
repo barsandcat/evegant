@@ -1,10 +1,11 @@
 
 
 class ProductionScheme:
-	def __init__(self, id, input, output):
-		assert id > 0
-		assert output
-		self.id = id
-		self.input = input
-		self.output = output
+	def __init__(self, aSchemeId, aInputs, aOutputs):
+		assert aSchemeId > 0
+		assert aOutputs
+		assert len(aOutputs) > 0
+		self.schemeId = aSchemeId
+		self.inputs = aInputs
+		self.outputs = aOutputs
 		

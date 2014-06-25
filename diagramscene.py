@@ -65,7 +65,7 @@ import unittest.mock
 class TestProductionLineScene(unittest.TestCase):
 
 	def test_FillSceneOnlyRoot(self):
-		productionLine = ProductionLine(ProductionScheme(1, 2, 3))
+		productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 		sceneMock = unittest.mock.Mock()
 		FillScene(sceneMock, productionLine.rootProcess)
 		assert sceneMock.clear.called
