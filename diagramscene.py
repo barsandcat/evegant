@@ -64,19 +64,101 @@ import unittest.mock
 
 class TestProductionLineScene(unittest.TestCase):
 
+	def test_ConstructTree(self):
+		line = ProductionLine(ProductionScheme(1, [2, 3], [4]))
+		line.AddProcess(ProductionScheme(2, [1], [2]))
+		line.AddProcess(ProductionScheme(2, [1], [3]))
+		root = ConstructProcessGraphicTree(line)
+		assert root.process == line.processes[0]
+		assert not root.parents
+		assert len(root.children) == 2
+		assert not root.children[0].children
+		assert not root.children[1].children
+
+	def test_ConstructCyclesTree(self):
+		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
+		line.AddProcess(ProductionScheme(2, [2], [3]))
+		line.AddProcess(ProductionScheme(3, [1], [2, 4]))
+		root = ConstructProcessGraphicTree(line)
+		assert not root.parents
+		assert len(root.children) == 2
+		assert len(root.children[0].parents) == 2 or len(root.children[1].parents) == 2
+
+	def test_ConstructMultipleOutputsTree(self):
+		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
+		line.AddProcess(ProductionScheme(2, [2], [3]))
+		line.AddProcess(ProductionScheme(3, [1], [3, 4]))
+		root = ConstructProcessGraphicTree(line)
+		assert not root.parents
+		assert len(root.children) == 2
+		assert len(root.children[0].parents) == 1
+		assert len(root.children[1].parents) == 1
+
 	def test_FillSceneOnlyRoot(self):
 		productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 		sceneMock = unittest.mock.Mock()
-		FillScene(sceneMock, productionLine)
-		assert sceneMock.clear.called
-		assert sceneMock.AddProcess.called
+		##FillScene(sceneMock, productionLine)
+		##assert sceneMock.clear.called
+		##assert sceneMock.AddProcess.called
 
+
+class ProcessGraphic:
+	def __init__(self, aProductionProcess):
+		self.process = aProductionProcess
+		self.children = []
+		self.parents = []
+
+	def AddChild(self, aGraphic):
+		if aGraphic not in self.children:
+			self.children.append(aGraphic)
+
+	def AddParent(self, aGraphic):
+		if aGraphic not in self.parents:
+			self.parents.append(aGraphic)
+
+
+def ConstructProcessGraphicTree(aProductionLine):
+	graphics = [ProcessGraphic(process) for process in aProductionLine.processes]
+
+	outputsOwners = {}
+	for graphic in graphics:
+		for out in graphic.process.scheme.outputs:
+			outputsOwners[out] = graphic
+	
+	for parent in graphics:
+		for inp in parent.process.scheme.inputs:
+			if inp in outputsOwners:
+				child = outputsOwners[inp]
+				parent.AddChild(child)
+				child.AddParent(parent)
+
+	root = graphics[0]
+	assert not root.parents
+	return root
 
 def FillScene(aScene, aProductionLine):
 	aScene.clear()
+
+	root = ConstructProcessGraphicTree(aProductionLine)
 	
-	for process in aProductionLine.processes:
-		aScene.AddProcess(2500, 2500)
+	## Findout process rank (e.g column)
+	processRanks = [0 for process in aProductionLine.processes]
+	maxRank = 0
+	queue = []
+	done = set()
+	queue.append(0)
+	while queue:
+		parentIndex = queue.pop(0)
+		if parentIndex not in done:
+			done.add(parentIndex)
+			for childIndex in processChildren[parentIndex]:
+				processRanks[childIndex] = max(processRank[childIndex], processRank[parentIndex] + 1)
+				maxRank = max(maxRank, processRank[childIndex])
+				queue.append(childIndex)
+	
+	## Findout process row
+	processRows = [[] for i in range(maxRank)]
+
 
 class Arrow(QGraphicsLineItem):
 	def __init__(self, startItem, endItem, parent=None, scene=None):
