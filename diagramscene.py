@@ -68,7 +68,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionScheme(1, [2, 3], [4]))
 		line.AddProcess(ProductionScheme(2, [1], [2]))
 		line.AddProcess(ProductionScheme(2, [1], [3]))
-		root = ConstructProcessGraphicTree(line)
+		graphics = ConstructProcessGraphicTree(line)
+		root = graphics[0]
 		assert root.process == line.processes[0]
 		assert not root.parents
 		assert len(root.children) == 2
@@ -79,7 +80,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
 		line.AddProcess(ProductionScheme(2, [2], [3]))
 		line.AddProcess(ProductionScheme(3, [1], [2, 4]))
-		root = ConstructProcessGraphicTree(line)
+		graphics = ConstructProcessGraphicTree(line)
+		root = graphics[0]
 		assert not root.parents
 		assert len(root.children) == 2
 		assert len(root.children[0].parents) == 2 or len(root.children[1].parents) == 2
@@ -88,7 +90,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
 		line.AddProcess(ProductionScheme(2, [2], [3]))
 		line.AddProcess(ProductionScheme(3, [1], [3, 4]))
-		root = ConstructProcessGraphicTree(line)
+		graphics = ConstructProcessGraphicTree(line)
+		root = graphics[0]
 		assert not root.parents
 		assert len(root.children) == 2
 		assert len(root.children[0].parents) == 1
@@ -107,6 +110,8 @@ class ProcessGraphic:
 		self.process = aProductionProcess
 		self.children = []
 		self.parents = []
+		self.col = 0
+		self.row = 1
 
 	def AddChild(self, aGraphic):
 		if aGraphic not in self.children:
@@ -133,32 +138,30 @@ def ConstructProcessGraphicTree(aProductionLine):
 					parent.AddChild(child)
 					child.AddParent(parent)
 
-	root = graphics[0]
-	assert not root.parents
-	return root
+	assert not graphics[0].parents
+	return graphics
 
 def FillScene(aScene, aProductionLine):
 	aScene.clear()
 
-	root = ConstructProcessGraphicTree(aProductionLine)
+	graphics = ConstructProcessGraphicTree(aProductionLine)
 	
 	## Findout process rank (e.g column)
-	processRanks = [0 for process in aProductionLine.processes]
-	maxRank = 0
-	queue = []
+	maxCol = 0
+	queue = [graphics[0]]
 	done = set()
-	queue.append(0)
 	while queue:
-		parentIndex = queue.pop(0)
-		if parentIndex not in done:
-			done.add(parentIndex)
-			for childIndex in processChildren[parentIndex]:
-				processRanks[childIndex] = max(processRank[childIndex], processRank[parentIndex] + 1)
-				maxRank = max(maxRank, processRank[childIndex])
-				queue.append(childIndex)
+		graphic = queue.pop(0)
+		if graphic not in done:
+			done.add(graphic)
+			for child in graphic.children:
+				child.col = max(child.col, graphic.col + 1)
+				maxCol = max(maxCol, child.col)
+				queue.append(child)
 	
 	## Findout process row
-	processRows = [[] for i in range(maxRank)]
+	processRows = [[] for i in range(maxCol)]
+
 
 
 class Arrow(QGraphicsLineItem):
