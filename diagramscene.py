@@ -123,14 +123,15 @@ def ConstructProcessGraphicTree(aProductionLine):
 	outputsOwners = {}
 	for graphic in graphics:
 		for out in graphic.process.scheme.outputs:
-			outputsOwners[out] = graphic
+			outputsOwners.setdefault(out, []).append(graphic)
 	
 	for parent in graphics:
 		for inp in parent.process.scheme.inputs:
 			if inp in outputsOwners:
-				child = outputsOwners[inp]
-				parent.AddChild(child)
-				child.AddParent(parent)
+				children = outputsOwners[inp]
+				for child in children:
+					parent.AddChild(child)
+					child.AddParent(parent)
 
 	root = graphics[0]
 	assert not root.parents
