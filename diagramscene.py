@@ -67,23 +67,16 @@ class TestProductionLineScene(unittest.TestCase):
 	def test_FillSceneOnlyRoot(self):
 		productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 		sceneMock = unittest.mock.Mock()
-		FillScene(sceneMock, productionLine.rootProcess)
+		FillScene(sceneMock, productionLine)
 		assert sceneMock.clear.called
 		assert sceneMock.AddProcess.called
 
 
-def FillScene(scene, rootProcess):
-	scene.clear()
-	queue = []
-	done = set()
+def FillScene(aScene, aProductionLine):
+	aScene.clear()
 	
-	queue.append(rootProcess)
-	while queue:		
-		process = queue.pop(0)
-		if process not in done:
-			done.add(process)				
-			scene.AddProcess(2500, 2500)
-			queue.extend(process.inputs)
+	for process in aProductionLine.processes:
+		aScene.AddProcess(2500, 2500)
 
 class Arrow(QGraphicsLineItem):
 	def __init__(self, startItem, endItem, parent=None, scene=None):
@@ -232,7 +225,7 @@ class DiagramScene(QGraphicsScene):
 		super(DiagramScene, self).__init__(None)
 
 		self.productionLine = aProductionLine
-		FillScene(self, self.productionLine.rootProcess)
+		FillScene(self, self.productionLine)
 		
 	def AddProcess(self, x, y):
 		item = DiagramItem()
