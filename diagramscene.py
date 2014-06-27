@@ -265,99 +265,7 @@ class Arrow(QGraphicsLineItem):
 			painter.drawLine(myLine)
 			myLine.translate(0,-8.0)
 			painter.drawLine(myLine)
-
-class DiagramItem(QGraphicsPolygonItem):
-
-	def __init__(self, parent=None):
-		super(DiagramItem, self).__init__(parent)
-
-		self.arrows = []
-
-		path = QPainterPath()
-
-		self.myPolygon = QPolygonF([
-				QPointF(-100, -100), QPointF(-100, 100),
-				QPointF(100, 100), QPointF(100, -100),
-				QPointF(-100, -100)])
-
-		self.setPolygon(self.myPolygon)
-		self.setFlag(QGraphicsItem.ItemIsMovable, True)
-		self.setFlag(QGraphicsItem.ItemIsSelectable, True)
-
-	def removeArrow(self, arrow):
-		try:
-			self.arrows.remove(arrow)
-		except ValueError:
-			pass
-
-	def removeArrows(self):
-		for arrow in self.arrows[:]:
-			arrow.startItem().removeArrow(arrow)
-			arrow.endItem().removeArrow(arrow)
-			self.scene().removeItem(arrow)
-
-	def addArrow(self, arrow):
-		self.arrows.append(arrow)
-
-	def image(self):
-		pixmap = QPixmap(250, 250)
-		pixmap.fill(Qt.transparent)
-		painter = QPainter(pixmap)
-		painter.setPen(QPen(Qt.black, 8))
-		painter.translate(125, 125)
-		painter.drawPolyline(self.myPolygon)
-		return pixmap
-
-
-	def itemChange(self, change, value):
-		if change == QGraphicsItem.ItemPositionChange:
-			for arrow in self.arrows:
-				arrow.updatePosition()
-
-		return value
-
-
-class DiagramScene(QGraphicsScene):
-	InsertItem, InsertLine, MoveItem  = range(3)
-
-	def __init__(self, aProductionLine):
-		super(DiagramScene, self).__init__(None)
-
-		self.productionLine = aProductionLine
-		graphics = ConstructProcessGraphicTree(aProductionLine)
-		FillScene(self, graphics)
-		
-	def AddProcess(self, x, y):
-		item = DiagramItem()
-		self.addItem(item)
-		item.setPos(QPointF(x, y))
-
-	def editorLostFocus(self, item):
-		cursor = item.textCursor()
-		cursor.clearSelection()
-		item.setTextCursor(cursor)
-
-		if item.toPlainText():
-			self.removeItem(item)
-			item.deleteLater()
-
-	def isItemChange(self, type):
-		for item in self.selectedItems():
-			if isinstance(item, type):
-				return True
-		return False
 	
-	def AddNewItem(self):
-		item = DiagramItem()
-		self.addItem(item)
-		item.setPos(QPointF(2300, 2500))
-		arrow = Arrow(item, self.prevItem)
-		item.addArrow(arrow)
-		self.prevItem.addArrow(arrow)
-		arrow.setZValue(-1000.0)
-		self.addItem(arrow)
-		arrow.updatePosition()
-
 
 class MainWindow(QMainWindow):
  
@@ -368,8 +276,11 @@ class MainWindow(QMainWindow):
 		self.productionLine.AddProcess(ProductionScheme(2, [1], [2]))
 		self.productionLine.AddProcess(ProductionScheme(2, [1], [3]))
 
-		self.scene = DiagramScene(self.productionLine)
-		
+		self.scene = QGraphicsScene()
+
+		graphics = ConstructProcessGraphicTree(self.productionLine)
+		FillScene(self.scene, graphics)
+			
 		self.createActions()
 		self.createMenus()
 		self.createToolBox()
@@ -394,15 +305,6 @@ class MainWindow(QMainWindow):
 			if self.buttonGroup.button(id) != button:
 				button.setChecked(False)
 
-
-
-	def deleteItem(self):
-		for item in self.scene.selectedItems():
-			if isinstance(item, DiagramItem):
-				item.removeArrows()
-			self.scene.removeItem(item)
-
-
 	def sceneScaleChanged(self, scale):
 		newScale = scale.left(scale.indexOf("%")).toDouble()[0] / 100.0
 		oldMatrix = self.view.matrix()
@@ -422,7 +324,6 @@ class MainWindow(QMainWindow):
 		button = QToolButton()
 		button.setIconSize(QSize(50, 50))
 		button.setCheckable(False)
-		button.clicked.connect(self.scene.AddNewItem)
 		self.buttonGroup.addButton(button)
 
 		layout = QGridLayout()
@@ -437,11 +338,6 @@ class MainWindow(QMainWindow):
 		self.toolBox.addItem(itemWidget, "Basic Flowchart Shapes")
 
 	def createActions(self):
-		self.deleteAction = QAction(QIcon(':/images/delete.png'),
-				"&Delete", self, shortcut="Delete",
-				statusTip="Delete item from diagram",
-				triggered=self.deleteItem)
-
 		self.exitAction = QAction("E&xit", self, shortcut="Ctrl+X",
 				statusTip="Quit Scenediagram example", triggered=self.close)
 
@@ -456,21 +352,6 @@ class MainWindow(QMainWindow):
 		self.aboutMenu.addAction(self.aboutAction)
 
 	def createToolbars(self):
-		self.editToolBar = self.addToolBar("Edit")
-		self.editToolBar.addAction(self.deleteAction)
-
-		pointerButton = QToolButton()
-		pointerButton.setCheckable(True)
-		pointerButton.setChecked(True)
-		pointerButton.setIcon(QIcon(':/images/pointer.png'))
-		linePointerButton = QToolButton()
-		linePointerButton.setCheckable(True)
-		linePointerButton.setIcon(QIcon(':/images/linepointer.png'))
-
-		self.pointerTypeGroup = QButtonGroup()
-		self.pointerTypeGroup.addButton(pointerButton, DiagramScene.MoveItem)
-		self.pointerTypeGroup.addButton(linePointerButton,
-				DiagramScene.InsertLine)
 
 		self.sceneScaleCombo = QComboBox()
 		self.sceneScaleCombo.addItems(["50%", "75%", "100%", "125%", "150%"])
@@ -478,8 +359,6 @@ class MainWindow(QMainWindow):
 		self.sceneScaleCombo.currentIndexChanged[str].connect(self.sceneScaleChanged)
 
 		self.pointerToolbar = self.addToolBar("Pointer type")
-		self.pointerToolbar.addWidget(pointerButton)
-		self.pointerToolbar.addWidget(linePointerButton)
 		self.pointerToolbar.addWidget(self.sceneScaleCombo)
 
 
