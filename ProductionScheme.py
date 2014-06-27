@@ -9,3 +9,5 @@ class ProductionScheme:
 		self.inputs = aInputs
 		self.outputs = aOutputs
 		
+	def GetName(self):
+		return str(self.schemeId)

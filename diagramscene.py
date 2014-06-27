@@ -117,6 +117,7 @@ class ProcessGraphic(QGraphicsItem):
 
 	def paint(self, painter, option, widget=None):
 		painter.drawRoundedRect(-100, -100, 200, 200, 10, 10)
+		painter.drawText(QPointF(0, 0), self.process.scheme.GetName())
 
 	def boundingRect(self):
 		return QRectF(-100, -100, 200, 200)
@@ -167,15 +168,16 @@ def FillScene(aScene, aGraphics):
 
 	colWidth = 250
 	rowHeigth = 250
-	aScene.setSceneRect(QRectF(0, 0, colWidth * maxCol, rowHeigth * maxRow))
+	sceneWidth = colWidth * maxCol
+	sceneHeight = rowHeigth * maxRow
+	aScene.setSceneRect(QRectF(0, 0, sceneHeight, sceneWidth))
 	aScene.clear()
 
 	for graphic in aGraphics:
-		x = (graphic.col + 0.5) * colWidth
+		x = sceneWidth - (graphic.col + 0.5) * colWidth
 		y = (graphic.row + 0.5) * rowHeigth
 		graphic.setPos(QPointF(x, y))
 		aScene.addItem(graphic)
-
 
 class Arrow(QGraphicsLineItem):
 	def __init__(self, startItem, endItem, parent=None, scene=None):
@@ -274,7 +276,7 @@ class MainWindow(QMainWindow):
 
 		self.productionLine = ProductionLine(ProductionScheme(1, [2, 3], [4]))
 		self.productionLine.AddProcess(ProductionScheme(2, [1], [2]))
-		self.productionLine.AddProcess(ProductionScheme(2, [1], [3]))
+		self.productionLine.AddProcess(ProductionScheme(3, [1], [3]))
 
 		self.scene = QGraphicsScene()
 
