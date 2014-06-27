@@ -157,13 +157,16 @@ def FillScene(aScene, aProductionLine):
 				child.col = max(child.col, graphic.col + 1)
 				maxCol = max(maxCol, child.col)
 				queue.append(child)
-	
+	maxCol = maxCol + 1
+
 	## Findout process row
 	maxRow = 0
 	processRows = [0 for i in range(maxCol + 1)]
 	for graphic in graphics:
-		graphic.row = processRows[graphic.col] = processRows[graphic.col] + 1
+		graphic.row = processRows[graphic.col]
+		processRows[graphic.col] = processRows[graphic.col] + 1
 		maxRow = max(maxRow, graphic.row)
+	maxRow = maxRow + 1
 
 	colWidth = 250
 	rowHeigth = 200
@@ -171,9 +174,9 @@ def FillScene(aScene, aProductionLine):
 	aScene.clear()
 
 	for graphic in graphics:
-		x = (graphic.row + 0.5) * colWidth
-		y = (graphic.col + 0.5) * rowHeigth
-		aScene.AddProcess(QPointF(x, y))
+		x = (graphic.col + 0.5) * colWidth
+		y = (graphic.row + 0.5) * rowHeigth
+		aScene.AddProcess(x, y)
 
 
 class Arrow(QGraphicsLineItem):
@@ -275,9 +278,9 @@ class DiagramItem(QGraphicsPolygonItem):
 		path = QPainterPath()
 
 		self.myPolygon = QPolygonF([
-				QPointF(-120, -80), QPointF(-70, 80),
-				QPointF(120, 80), QPointF(70, -80),
-				QPointF(-120, -80)])
+				QPointF(-100, -100), QPointF(-100, 100),
+				QPointF(100, 100), QPointF(100, -100),
+				QPointF(-100, -100)])
 
 		self.setPolygon(self.myPolygon)
 		self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -365,7 +368,6 @@ class MainWindow(QMainWindow):
 		self.productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 
 		self.scene = DiagramScene(self.productionLine)
-		self.scene.setSceneRect(QRectF(0, 0, 5000, 5000))
 		
 		self.createActions()
 		self.createMenus()
