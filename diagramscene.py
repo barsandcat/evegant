@@ -100,9 +100,9 @@ class TestProductionLineScene(unittest.TestCase):
 	def test_FillSceneOnlyRoot(self):
 		productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
 		sceneMock = unittest.mock.Mock()
-		##FillScene(sceneMock, productionLine)
-		##assert sceneMock.clear.called
-		##assert sceneMock.AddProcess.called
+		FillScene(sceneMock, productionLine)
+		assert sceneMock.clear.called
+		assert sceneMock.AddProcess.called
 
 
 class ProcessGraphic:
@@ -111,7 +111,7 @@ class ProcessGraphic:
 		self.children = []
 		self.parents = []
 		self.col = 0
-		self.row = 1
+		self.row = 0
 
 	def AddChild(self, aGraphic):
 		if aGraphic not in self.children:
@@ -142,11 +142,10 @@ def ConstructProcessGraphicTree(aProductionLine):
 	return graphics
 
 def FillScene(aScene, aProductionLine):
-	aScene.clear()
 
 	graphics = ConstructProcessGraphicTree(aProductionLine)
 	
-	## Findout process rank (e.g column)
+	## Findout process column
 	maxCol = 0
 	queue = [graphics[0]]
 	done = set()
@@ -160,8 +159,21 @@ def FillScene(aScene, aProductionLine):
 				queue.append(child)
 	
 	## Findout process row
-	processRows = [[] for i in range(maxCol)]
+	maxRow = 0
+	processRows = [0 for i in range(maxCol + 1)]
+	for graphic in graphics:
+		graphic.row = processRows[graphic.col] = processRows[graphic.col] + 1
+		maxRow = max(maxRow, graphic.row)
 
+	colWidth = 250
+	rowHeigth = 200
+	aScene.setSceneRect(QRectF(0, 0, colWidth * maxCol, rowHeigth * maxRow))
+	aScene.clear()
+
+	for graphic in graphics:
+		x = (graphic.row + 0.5) * colWidth
+		y = (graphic.col + 0.5) * rowHeigth
+		aScene.AddProcess(QPointF(x, y))
 
 
 class Arrow(QGraphicsLineItem):
