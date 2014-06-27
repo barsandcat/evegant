@@ -97,17 +97,10 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(root.children[0].parents) == 1
 		assert len(root.children[1].parents) == 1
 
-	def test_FillSceneOnlyRoot(self):
-		line = ProductionLine(ProductionScheme(1, [2], [3]))
-		sceneMock = unittest.mock.Mock()
-		graphics = ConstructProcessGraphicTree(line)
-		FillScene(sceneMock, graphics)
-		assert sceneMock.clear.called
-		assert sceneMock.AddProcess.called
 
-
-class ProcessGraphic:
+class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess):
+		super().__init__()
 		self.process = aProductionProcess
 		self.children = []
 		self.parents = []
@@ -121,6 +114,12 @@ class ProcessGraphic:
 	def AddParent(self, aGraphic):
 		if aGraphic not in self.parents:
 			self.parents.append(aGraphic)
+
+	def paint(self, painter, option, widget=None):
+		painter.drawRoundedRect(-100, -100, 200, 200, 10, 10)
+
+	def boundingRect(self):
+		return QRectF(-100, -100, 200, 200)
 
 
 def ConstructProcessGraphicTree(aProductionLine):
@@ -167,14 +166,15 @@ def FillScene(aScene, aGraphics):
 	maxRow = maxRow + 1
 
 	colWidth = 250
-	rowHeigth = 200
+	rowHeigth = 250
 	aScene.setSceneRect(QRectF(0, 0, colWidth * maxCol, rowHeigth * maxRow))
 	aScene.clear()
 
 	for graphic in aGraphics:
 		x = (graphic.col + 0.5) * colWidth
 		y = (graphic.row + 0.5) * rowHeigth
-		aScene.AddProcess(x, y)
+		graphic.setPos(QPointF(x, y))
+		aScene.addItem(graphic)
 
 
 class Arrow(QGraphicsLineItem):
@@ -364,7 +364,9 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
-		self.productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
+		self.productionLine = ProductionLine(ProductionScheme(1, [2, 3], [4]))
+		self.productionLine.AddProcess(ProductionScheme(2, [1], [2]))
+		self.productionLine.AddProcess(ProductionScheme(2, [1], [3]))
 
 		self.scene = DiagramScene(self.productionLine)
 		
