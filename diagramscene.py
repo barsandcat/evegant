@@ -98,9 +98,10 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(root.children[1].parents) == 1
 
 	def test_FillSceneOnlyRoot(self):
-		productionLine = ProductionLine(ProductionScheme(1, [2], [3]))
+		line = ProductionLine(ProductionScheme(1, [2], [3]))
 		sceneMock = unittest.mock.Mock()
-		FillScene(sceneMock, productionLine)
+		graphics = ConstructProcessGraphicTree(line)
+		FillScene(sceneMock, graphics)
 		assert sceneMock.clear.called
 		assert sceneMock.AddProcess.called
 
@@ -141,13 +142,10 @@ def ConstructProcessGraphicTree(aProductionLine):
 	assert not graphics[0].parents
 	return graphics
 
-def FillScene(aScene, aProductionLine):
-
-	graphics = ConstructProcessGraphicTree(aProductionLine)
-	
+def FillScene(aScene, aGraphics):	
 	## Findout process column
 	maxCol = 0
-	queue = [graphics[0]]
+	queue = [aGraphics[0]]
 	done = set()
 	while queue:
 		graphic = queue.pop(0)
@@ -162,7 +160,7 @@ def FillScene(aScene, aProductionLine):
 	## Findout process row
 	maxRow = 0
 	processRows = [0 for i in range(maxCol + 1)]
-	for graphic in graphics:
+	for graphic in aGraphics:
 		graphic.row = processRows[graphic.col]
 		processRows[graphic.col] = processRows[graphic.col] + 1
 		maxRow = max(maxRow, graphic.row)
@@ -173,7 +171,7 @@ def FillScene(aScene, aProductionLine):
 	aScene.setSceneRect(QRectF(0, 0, colWidth * maxCol, rowHeigth * maxRow))
 	aScene.clear()
 
-	for graphic in graphics:
+	for graphic in aGraphics:
 		x = (graphic.col + 0.5) * colWidth
 		y = (graphic.row + 0.5) * rowHeigth
 		aScene.AddProcess(x, y)
@@ -326,7 +324,8 @@ class DiagramScene(QGraphicsScene):
 		super(DiagramScene, self).__init__(None)
 
 		self.productionLine = aProductionLine
-		FillScene(self, self.productionLine)
+		graphics = ConstructProcessGraphicTree(aProductionLine)
+		FillScene(self, graphics)
 		
 	def AddProcess(self, x, y):
 		item = DiagramItem()
