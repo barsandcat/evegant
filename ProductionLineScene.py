@@ -21,7 +21,6 @@ class TestProductionLineScene(unittest.TestCase):
 		graphics = ConstructProcessGraphicTree(line)
 		root = graphics[0]
 		assert root.process == line.processes[0]
-		assert not root.parents
 		assert len(root.children) == 2
 		assert not root.children[0].children
 		assert not root.children[1].children
@@ -32,9 +31,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line.AddProcess(ProductionScheme(3, [1], [2, 4]))
 		graphics = ConstructProcessGraphicTree(line)
 		root = graphics[0]
-		assert not root.parents
 		assert len(root.children) == 2
-		assert len(root.children[0].parents) == 2 or len(root.children[1].parents) == 2
+		assert root.children[0].children or root.children[1].children
 
 	def test_ConstructMultipleOutputsTree(self):
 		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
@@ -42,10 +40,9 @@ class TestProductionLineScene(unittest.TestCase):
 		line.AddProcess(ProductionScheme(3, [1], [3, 4]))
 		graphics = ConstructProcessGraphicTree(line)
 		root = graphics[0]
-		assert not root.parents
 		assert len(root.children) == 2
-		assert len(root.children[0].parents) == 1
-		assert len(root.children[1].parents) == 1
+		assert not root.children[0].children
+		assert not root.children[1].children
 
 
 class ItemStackGraphic(QGraphicsItem):
@@ -68,7 +65,6 @@ class ProcessGraphic(QGraphicsItem):
 		super().__init__()
 		self.process = aProductionProcess
 		self.children = []
-		self.parents = []
 		self.col = 0
 		self.row = 0
 		self.inputs = []
@@ -95,10 +91,6 @@ class ProcessGraphic(QGraphicsItem):
 		if aGraphic not in self.children:
 			self.children.append(aGraphic)
 
-	def AddParent(self, aGraphic):
-		if aGraphic not in self.parents:
-			self.parents.append(aGraphic)
-
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
@@ -124,9 +116,7 @@ def ConstructProcessGraphicTree(aProductionLine):
 				children = outputsOwners[inp]
 				for child in children:
 					parent.AddChild(child)
-					child.AddParent(parent)
 
-	assert not graphics[0].parents
 	return graphics
 
 def FillScene(aScene, aGraphics):	
