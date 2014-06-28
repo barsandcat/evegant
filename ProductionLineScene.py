@@ -47,6 +47,10 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(root.children[0].parents) == 1
 		assert len(root.children[1].parents) == 1
 
+def GetCenteredRectF(width, height):
+	x = width / 2 - width
+	y = height / 2 - height
+	return QRectF(x, y, width, height)	
 
 class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess):
@@ -56,6 +60,7 @@ class ProcessGraphic(QGraphicsItem):
 		self.parents = []
 		self.col = 0
 		self.row = 0
+		self.rect = GetCenteredRectF(200, 200)
 
 	def AddChild(self, aGraphic):
 		if aGraphic not in self.children:
@@ -66,12 +71,13 @@ class ProcessGraphic(QGraphicsItem):
 			self.parents.append(aGraphic)
 
 	def paint(self, painter, option, widget=None):
-		painter.fillRect(-100, -100, 200, 200, Qt.white)
-		painter.drawRoundedRect(-100, -100, 200, 200, 10, 10)
+		painter.fillRect(self.rect, Qt.white)
+		painter.drawRoundedRect(self.rect, 10, 10)
 		painter.drawText(QPointF(0, 0), self.process.scheme.GetName())
 
 	def boundingRect(self):
-		return QRectF(-100, -100, 200, 200)
+		return self.rect
+
 
 
 def ConstructProcessGraphicTree(aProductionLine):

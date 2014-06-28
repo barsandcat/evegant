@@ -1,7 +1,5 @@
 #!/usr/bin/python3
 
-from ProductionScheme import ProductionScheme
-from ProductionLine import ProductionLine
 
 import math
 
@@ -18,6 +16,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 import diagramscene_rc
 
 from ProductionLineScene import (ProcessGraphic, ConstructProcessGraphicTree, FillScene)
+from ProductionScheme import ProductionScheme
+from ProductionLine import ProductionLine
 
 
 class MainWindow(QMainWindow):
