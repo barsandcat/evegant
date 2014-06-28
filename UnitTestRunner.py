@@ -2,7 +2,7 @@
 
 import unittest
 
-from diagramscene import TestProductionLineScene
+from ProductionLineScene import TestProductionLineScene
 from ProductionLine import TestProductionLine
 
 unittest.main()
