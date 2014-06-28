@@ -74,17 +74,21 @@ class ProcessGraphic(QGraphicsItem):
 		self.inputs = []
 		self.outputs = []
 		
-		height = 0
 		width = 200
-		offset = 50
-		inputsEdge = width / 2 - width
+		inputOffset = 50
 
 		for inp in self.process.scheme.inputs:
-			offset = offset + 50
-			itemStack = ItemStackGraphic(inp, self, QPointF(-20, offset))
+			inputOffset = inputOffset + 50
+			itemStack = ItemStackGraphic(inp, self, QPointF(-20, inputOffset))
 			self.inputs.append(itemStack)
 
-		self.rect = QRectF(0, 0, width, offset + 50)
+		outputOffset = 50
+		for out in self.process.scheme.outputs:
+			outputOffset = outputOffset + 50
+			itemStack = ItemStackGraphic(out, self, QPointF(width - 40, outputOffset))
+			self.outputs.append(itemStack)
+
+		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + 50)
 
 
 	def AddChild(self, aGraphic):
@@ -149,8 +153,8 @@ def FillScene(aScene, aGraphics):
 		maxRow = max(maxRow, graphic.row)
 	maxRow = maxRow + 1
 
-	colWidth = 250
-	rowHeigth = 250
+	colWidth = 300
+	rowHeigth = 200
 	sceneWidth = colWidth * maxCol
 	sceneHeight = rowHeigth * maxRow
 	aScene.setSceneRect(QRectF(0, 0, sceneHeight, sceneWidth))
@@ -159,19 +163,14 @@ def FillScene(aScene, aGraphics):
 	## Set process positions
 	for graphic in aGraphics:
 		x = sceneWidth - (graphic.col + 1) * colWidth
-		y = graphic.row * rowHeigth
+		y = 50 + graphic.row * rowHeigth
 		graphic.setPos(QPointF(x, y))
 		aScene.addItem(graphic)
 
 	## Add lines
-	queue = [aGraphics[0]]
-	done = set()
-	while queue:
-		graphic = queue.pop(0)
-		if graphic not in done:
-			done.add(graphic)
-			queue.extend(graphic.children)
-			for parent in graphic.parents:
-				line = QGraphicsLineItem(QLineF(parent.pos(), graphic.pos()))
-				line.setZValue(-1000)
-				aScene.addItem(line)
+	for graphic in aGraphics:
+		for child in graphic.children:
+			line = QGraphicsLineItem(QLineF(child.pos(), graphic.pos()))
+			line.setZValue(-1000)
+			aScene.addItem(line)
+
