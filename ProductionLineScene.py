@@ -47,10 +47,21 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(root.children[0].parents) == 1
 		assert len(root.children[1].parents) == 1
 
-def GetCenteredRectF(width, height):
-	x = width / 2 - width
-	y = height / 2 - height
-	return QRectF(x, y, width, height)	
+
+class ItemStackGraphic(QGraphicsItem):
+	def __init__(self, aItemId, aParent, aPos):
+		super().__init__(aParent)
+		self.setPos(aPos)
+		self.itemId = aItemId
+		self.rect = QRectF(0, 0, 60, 40)
+
+	def paint(self, painter, option, widget=None):
+		painter.fillRect(self.rect, Qt.white)
+		painter.drawRect(self.rect)
+		painter.drawText(self.rect.center(), str(self.itemId))
+
+	def boundingRect(self):
+		return self.rect
 
 class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess):
@@ -60,7 +71,21 @@ class ProcessGraphic(QGraphicsItem):
 		self.parents = []
 		self.col = 0
 		self.row = 0
-		self.rect = GetCenteredRectF(200, 200)
+		self.inputs = []
+		self.outputs = []
+		
+		height = 0
+		width = 200
+		offset = 50
+		inputsEdge = width / 2 - width
+
+		for inp in self.process.scheme.inputs:
+			offset = offset + 50
+			itemStack = ItemStackGraphic(inp, self, QPointF(-20, offset))
+			self.inputs.append(itemStack)
+
+		self.rect = QRectF(0, 0, width, offset + 50)
+
 
 	def AddChild(self, aGraphic):
 		if aGraphic not in self.children:
@@ -73,10 +98,11 @@ class ProcessGraphic(QGraphicsItem):
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(QPointF(0, 0), self.process.scheme.GetName())
+		painter.drawText(self.rect.center(), self.process.scheme.GetName())
 
 	def boundingRect(self):
 		return self.rect
+
 
 
 
@@ -132,8 +158,8 @@ def FillScene(aScene, aGraphics):
 
 	## Set process positions
 	for graphic in aGraphics:
-		x = sceneWidth - (graphic.col + 0.5) * colWidth
-		y = (graphic.row + 0.5) * rowHeigth
+		x = sceneWidth - (graphic.col + 1) * colWidth
+		y = graphic.row * rowHeigth
 		graphic.setPos(QPointF(x, y))
 		aScene.addItem(graphic)
 
