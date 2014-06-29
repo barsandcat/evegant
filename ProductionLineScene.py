@@ -105,17 +105,18 @@ class ProcessGraphic(QGraphicsItem):
 def ConstructProcessGraphicTree(aProductionLine):
 	graphics = [ProcessGraphic(process) for process in aProductionLine.processes]
 
-	outputsOwners = {}
+	outputsByItemId = {}
 	for graphic in graphics:
-		for out in graphic.process.scheme.outputs:
-			outputsOwners.setdefault(out, []).append(graphic)
+		for out in graphic.outputs:
+			outputsByItemId.setdefault(out.itemId, []).append(out)
 	
-	for parent in graphics:
-		for inp in parent.process.scheme.inputs:
-			if inp in outputsOwners:
-				children = outputsOwners[inp]
-				for child in children:
-					parent.AddChild(child)
+	for parentProcess in graphics:
+		for inp in parentProcess.inputs:
+			if inp.itemId in outputsByItemId:
+				outputs = outputsByItemId[inp.itemId]
+				for out in outputs:
+					childProcess = out.parentItem()
+					parentProcess.AddChild(childProcess)
 
 	return graphics
 
