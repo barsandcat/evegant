@@ -58,7 +58,7 @@ class ItemStackGraphic(QGraphicsItem):
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRect(self.rect)
-		painter.drawText(self.rect.center(), str(self.itemId))
+		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, str(self.itemId))
 
 	def GetInScenePos(self):
 		return self.scenePos() + QPointF(0, 20)
@@ -107,7 +107,7 @@ class ProcessGraphic(QGraphicsItem):
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(self.rect.center(), self.process.scheme.GetName())
+		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())
 
 	def boundingRect(self):
 		return self.rect
