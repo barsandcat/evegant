@@ -19,30 +19,32 @@ class TestProductionLineScene(unittest.TestCase):
 		line.AddProcess(ProductionScheme(2, [1], [2]))
 		line.AddProcess(ProductionScheme(2, [1], [3]))
 		graphics = ConstructProcessGraphicTree(line)
-		root = graphics[0]
-		assert root.process == line.processes[0]
-		assert len(root.children) == 2
-		assert not root.children[0].children
-		assert not root.children[1].children
+		assert len(graphics[0].inputs[0].children) == 1
+		assert len(graphics[0].inputs[1].children) == 1
+		assert len(graphics[1].inputs[0].children) == 0
+		assert len(graphics[2].inputs[0].children) == 0
 
 	def test_ConstructCyclesTree(self):
 		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
 		line.AddProcess(ProductionScheme(2, [2], [3]))
 		line.AddProcess(ProductionScheme(3, [1], [2, 4]))
 		graphics = ConstructProcessGraphicTree(line)
-		root = graphics[0]
-		assert len(root.children) == 2
-		assert root.children[0].children or root.children[1].children
+
+		assert len(graphics[0].inputs[0].children) == 1
+		assert len(graphics[0].inputs[1].children) == 1
+		assert len(graphics[1].inputs[0].children) == 1
+		assert len(graphics[2].inputs[0].children) == 0
 
 	def test_ConstructMultipleOutputsTree(self):
 		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
 		line.AddProcess(ProductionScheme(2, [2], [3]))
 		line.AddProcess(ProductionScheme(3, [1], [3, 4]))
 		graphics = ConstructProcessGraphicTree(line)
-		root = graphics[0]
-		assert len(root.children) == 2
-		assert not root.children[0].children
-		assert not root.children[1].children
+
+		assert len(graphics[0].inputs[0].children) == 2
+		assert len(graphics[0].inputs[1].children) == 1
+		assert len(graphics[1].inputs[0].children) == 0
+		assert len(graphics[2].inputs[0].children) == 0
 
 
 class ItemStackGraphic(QGraphicsItem):
@@ -71,7 +73,6 @@ class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess):
 		super().__init__()
 		self.process = aProductionProcess
-		self.children = []
 		self.col = 0
 		self.row = 0
 		self.inputs = []
@@ -94,9 +95,14 @@ class ProcessGraphic(QGraphicsItem):
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + 50)
 
 
-	def AddChild(self, aGraphic):
-		if aGraphic not in self.children:
-			self.children.append(aGraphic)
+	def GetChildren(self):
+		children = set()
+		for inp in self.inputs:
+			for childOut in inp.children:
+				childProcess = childOut.parentItem()
+				children.add(childProcess)
+
+		return children
 
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
@@ -123,8 +129,6 @@ def ConstructProcessGraphicTree(aProductionLine):
 				outputs = outputsByItemId[inp.itemId]
 				for out in outputs:
 					inp.children.append(out)
-					childProcess = out.parentItem()
-					parentProcess.AddChild(childProcess)
 
 	return graphics
 
@@ -137,7 +141,8 @@ def FillScene(aScene, aGraphics):
 		graphic = queue.pop(0)
 		if graphic not in done:
 			done.add(graphic)
-			for child in graphic.children:
+			children = graphic.GetChildren()
+			for child in children:
 				child.col = max(child.col, graphic.col + 1)
 				maxCol = max(maxCol, child.col)
 				queue.append(child)
