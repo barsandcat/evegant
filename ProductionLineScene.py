@@ -51,11 +51,18 @@ class ItemStackGraphic(QGraphicsItem):
 		self.setPos(aPos)
 		self.itemId = aItemId
 		self.rect = QRectF(0, 0, 60, 40)
+		self.children = []
 
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRect(self.rect)
 		painter.drawText(self.rect.center(), str(self.itemId))
+
+	def GetInScenePos(self):
+		return self.scenePos() + QPointF(0, 20)
+
+	def GetOutScenePos(self):
+		return self.scenePos() + QPointF(60, 20)
 
 	def boundingRect(self):
 		return self.rect
@@ -115,6 +122,7 @@ def ConstructProcessGraphicTree(aProductionLine):
 			if inp.itemId in outputsByItemId:
 				outputs = outputsByItemId[inp.itemId]
 				for out in outputs:
+					inp.children.append(out)
 					childProcess = out.parentItem()
 					parentProcess.AddChild(childProcess)
 
@@ -160,8 +168,9 @@ def FillScene(aScene, aGraphics):
 
 	## Add lines
 	for graphic in aGraphics:
-		for child in graphic.children:
-			line = QGraphicsLineItem(QLineF(child.pos(), graphic.pos()))
-			line.setZValue(-1000)
-			aScene.addItem(line)
+		for inp in graphic.inputs:
+			for child in inp.children:
+				line = QGraphicsLineItem(QLineF(child.GetOutScenePos(), inp.GetInScenePos()))
+				line.setZValue(-1000)
+				aScene.addItem(line)
 
