@@ -1,0 +1,52 @@
+
+SELECT tr.quantity, tr.damagePerJob, t.typeID 
+FROM ramTypeRequirements tr, invTypes t, invBlueprintTypes bt, invGroups g 
+WHERE tr.requiredTypeID = t.typeID and 
+      tr.typeID = bt.blueprintTypeID and 
+      tr.activityID = 1 and 
+      bt.productTypeID = 592 and 
+      g.categoryID != 16 and 
+      t.groupID = g.groupID;
+
+SELECT materialTypeID, max(0, sum(quantity)) quantity
+FROM 
+(
+  SELECT materialTypeID, quantity
+  FROM invTypeMaterials tm
+  WHERE tm.TypeID = 592
+  UNION
+  SELECT materialTypeID, tm.quantity * tr.quantity * -1 quantity
+  FROM invTypeMaterials tm, ramTypeRequirements tr, invBlueprintTypes bt
+  WHERE tm.typeID = tr.requiredTypeID and 
+        tr.typeID = bt.blueprintTypeID and 
+        tr.activityID = 1 and 
+        bt.productTypeID = 592 and 
+        tr.recycle = 1
+)
+tbl group by materialTypeID;
+
+
+  SELECT materialTypeID, tm.quantity * tr.quantity * -1 quantity
+  FROM invTypeMaterials tm, ramTypeRequirements tr, invBlueprintTypes bt
+  WHERE tm.typeID = tr.requiredTypeID and tr.typeID = bt.blueprintTypeID and 
+        tr.activityID = 1 and 
+        bt.productTypeID = 592 and 
+        tr.recycle = 1
+
+
+Bill of Materials does not take into consideration the efficiency of an installation.
+
+Industry Level I
+Isogen [4]
+Mexallon [333]
+Nocxium [2]
+Pyerite [235]
+Tritanium [3003]
+Zydrine [2]
+Extra Materials are not affected by skills and are not returned when recycling the manufactured product.
+Isogen [246]
+Mexallon [2897]
+Nocxium [28]
+Pyerite [3986]
+Tritanium [14270]
+Zydrine [3]
