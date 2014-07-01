@@ -3,14 +3,19 @@ import sqlite3
 
 
 import unittest
-import unittest.mock
+from unittest.mock import (Mock, MagicMock)
+
+from logging import (info, warning, error)
 
 class TestEveDB(unittest.TestCase):
 
 	def test_LoadBlueprint(self):
-		bp = LoadBluprint(939)
-		assert len(bp.GetOutputs()) == 1
-		assert len(bp.GetInputs()) == 6
+		cursor = Mock()
+		cursor.fetchall = Mock(return_value = [(34, 2730), (35, 214), (36, 303), (37, 4), (38, 2), (39, 2)])
+		cursor.fetchone = Mock(return_value = (939, 592, 'Navitas Blueprint'))
+		bp = LoadBluprint(cursor, 939)
+		self.assertEqual(len(bp.GetOutputs()), 1)
+		self.assertEqual(len(bp.GetInputs()), 6)
 
 
 dbFileName = "Eve toolkit/DATADUMP201403101147.db"
@@ -33,29 +38,20 @@ class BluePrint:
 		return name
 
 
-def LoadBluprint(aBlueprintId):
-	connection = sqlite3.connect(dbFileName)
-	bp = None
+def LoadBluprint(aCursor, aBlueprintId):
 	
-	with connection:
-		connection.row_factory = sqlite3.Row
-		cursor = connection.cursor()
+	aCursor.execute("SELECT tm.materialTypeID, quantity "
+		"FROM invTypeMaterials tm, invBlueprintTypes bt "
+		"WHERE tm.typeID = bt.productTypeID "
+		"AND bt.blueprintTypeID = ?", (aBlueprintId,))
+	rows = aCursor.fetchall()
 
-		cursor.execute("SELECT tm.materialTypeID, quantity "
-			"FROM invTypeMaterials tm, invBlueprintTypes bt "
-			"WHERE tm.typeID = bt.productTypeID "
-			"AND bt.blueprintTypeID = ?", (aBlueprintId,))
+	inputs = [row[0] for row in rows]
+	aCursor.execute("SELECT blueprintTypeID, productTypeID, typeName "
+		"FROM invBlueprintTypes bt, invTypes t "
+		"WHERE blueprintTypeID = ? "
+		"AND bt.blueprintTypeID = t.typeID;", (aBlueprintId,))
+	row = aCursor.fetchone()
 
-		inputs = [row["materialTypeID"] for row in cursor]
-
-		cursor.execute("SELECT blueprintTypeID, productTypeID, typeName "
-			"FROM invBlueprintTypes bt, invTypes t "
-			"WHERE blueprintTypeID = ? "
-			"AND bt.blueprintTypeID = t.typeID;", (aBlueprintId,))
-		row = cursor.fetchone()
-		bp = BluePrint(row["blueprintTypeID"], row["typeName"], inputs, row["productTypeID"])
-
-		assert cursor.fetchone() == None
+	return BluePrint(row[0], row[2], inputs, row[1])
 	
-	return bp
-
