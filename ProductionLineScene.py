@@ -6,11 +6,12 @@ from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
 from PyQt5.QtGui import (QBrush, QColor, QFont, QIcon, QIntValidator, QPainter,
 		QPainterPath, QPen, QPixmap, QPolygonF)
-from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsLineItem, QGraphicsScene)
+from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsPixmapItem, QGraphicsLineItem, QGraphicsScene)
 
 
 import unittest
 import unittest.mock
+import zipfile
 
 class TestProductionLineScene(unittest.TestCase):
 
@@ -77,6 +78,14 @@ class ProcessGraphic(QGraphicsItem):
 		self.row = 0
 		self.inputs = []
 		self.outputs = []
+
+		typesArchive = zipfile.ZipFile('Eve toolkit/Rubicon_1.3_Types.zip')
+		filename = 'Types/{0}_32.png'.format(self.process.schema.schemaId)
+		icondata = typesArchive.read(filename)
+		pixmap = QPixmap()
+		pixmap.loadFromData(icondata)
+		icon = QGraphicsPixmapItem(pixmap, self)
+
 		
 		width = 200
 		inputOffset = 50
