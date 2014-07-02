@@ -34,9 +34,9 @@ class ProductionLine:
 
 		items = {}
 		for process in self.processes:
-			for inp in process.schema.inputs:
+			for inp in process.schema.GetInputs():
 				items[inp] = items.get(inp, 0) - 1
-			for out in process.schema.outputs:
+			for out in process.schema.GetOutputs():
 				items[out] = items.get(out, 0) + 1
 
 		for item, count in items.items():

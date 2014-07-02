@@ -11,3 +11,9 @@ class ProductionSchema:
 		
 	def GetName(self):
 		return str(self.schemaId)
+
+	def GetInputs(self):
+		return self.inputs
+
+	def GetOutputs(self):
+		return self.outputs

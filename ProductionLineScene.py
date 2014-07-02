@@ -81,13 +81,13 @@ class ProcessGraphic(QGraphicsItem):
 		width = 200
 		inputOffset = 50
 
-		for inp in self.process.schema.inputs:
+		for inp in self.process.schema.GetInputs():
 			inputOffset = inputOffset + 50
 			itemStack = ItemStackGraphic(inp, self, QPointF(-20, inputOffset))
 			self.inputs.append(itemStack)
 
 		outputOffset = 50
-		for out in self.process.schema.outputs:
+		for out in self.process.schema.GetOutputs():
 			outputOffset = outputOffset + 50
 			itemStack = ItemStackGraphic(out, self, QPointF(width - 40, outputOffset))
 			self.outputs.append(itemStack)
