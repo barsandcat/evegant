@@ -13,6 +13,8 @@ import unittest
 import unittest.mock
 import zipfile
 
+typesArchive = None
+
 class TestProductionLineScene(unittest.TestCase):
 
 	def test_ConstructTree(self):
@@ -53,22 +55,36 @@ class ItemStackGraphic(QGraphicsItem):
 		super().__init__(aParent)
 		self.setPos(aPos)
 		self.itemId = aItemId
-		self.rect = QRectF(0, 0, 60, 40)
+		self.rect = QRectF(-35, 0, 70, 35)
 		self.children = []
+		icon = QGraphicsPixmapItem(GetTypePixmap(aItemId, 32), self)
+		icon.setPos(QPointF(-33, 2))
 
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRect(self.rect)
-		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, str(self.itemId))
 
 	def GetInScenePos(self):
-		return self.scenePos() + QPointF(0, 20)
+		return self.scenePos() + QPointF(-35, 17)
 
 	def GetOutScenePos(self):
-		return self.scenePos() + QPointF(60, 20)
+		return self.scenePos() + QPointF(35, 17)
 
 	def boundingRect(self):
 		return self.rect
+
+def GetTypePixmap(aTypeId, aSize):
+	pixmap = QPixmap()
+
+	global typesArchive
+	if not typesArchive:
+		typesArchive = zipfile.ZipFile('Eve toolkit/Rubicon_1.3_Types.zip')
+
+	filename = 'Types/{0}_{1}.png'.format(aTypeId, aSize)
+	pixmap.loadFromData(typesArchive.read(filename))
+
+	return pixmap
+
 
 class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess):
@@ -79,26 +95,21 @@ class ProcessGraphic(QGraphicsItem):
 		self.inputs = []
 		self.outputs = []
 
-		typesArchive = zipfile.ZipFile('Eve toolkit/Rubicon_1.3_Types.zip')
-		filename = 'Types/{0}_32.png'.format(self.process.schema.schemaId)
-		icondata = typesArchive.read(filename)
-		pixmap = QPixmap()
-		pixmap.loadFromData(icondata)
-		icon = QGraphicsPixmapItem(pixmap, self)
-
+		icon = QGraphicsPixmapItem(GetTypePixmap(self.process.schema.schemaId, 32), self)
 		
 		width = 200
 		inputOffset = 50
+		space = 40
 
 		for inp in self.process.schema.GetInputs():
-			inputOffset = inputOffset + 50
-			itemStack = ItemStackGraphic(inp, self, QPointF(-20, inputOffset))
+			itemStack = ItemStackGraphic(inp, self, QPointF(0, inputOffset))
+			inputOffset = inputOffset + space
 			self.inputs.append(itemStack)
 
 		outputOffset = 50
 		for out in self.process.schema.GetOutputs():
-			outputOffset = outputOffset + 50
-			itemStack = ItemStackGraphic(out, self, QPointF(width - 40, outputOffset))
+			itemStack = ItemStackGraphic(out, self, QPointF(width, outputOffset))
+			outputOffset = outputOffset + space
 			self.outputs.append(itemStack)
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + 50)
