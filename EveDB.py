@@ -13,12 +13,9 @@ class TestEveDB(unittest.TestCase):
 		cursor = Mock()
 		cursor.fetchall = Mock(return_value = [(34, 2730), (35, 214), (36, 303), (37, 4), (38, 2), (39, 2)])
 		cursor.fetchone = Mock(return_value = (939, 592, 'Navitas Blueprint'))
-		bp = LoadBluprint(cursor, 939)
+		bp = LoadBlueprint(cursor, 939)
 		self.assertEqual(len(bp.GetOutputs()), 1)
 		self.assertEqual(len(bp.GetInputs()), 6)
-
-
-dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 
 
 class BluePrint:
@@ -34,11 +31,11 @@ class BluePrint:
 	def GetInputs(self):
 		return self.inputs
 
-	def GetName():
-		return name
+	def GetName(self):
+		return self.name
 
 
-def LoadBluprint(aCursor, aBlueprintId):
+def LoadBlueprint(aCursor, aBlueprintId):
 	
 	aCursor.execute("SELECT tm.materialTypeID, quantity "
 		"FROM invTypeMaterials tm, invBlueprintTypes bt "

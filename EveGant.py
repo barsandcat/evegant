@@ -2,6 +2,7 @@
 
 
 import math
+import sqlite3
 
 from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
@@ -18,6 +19,7 @@ import diagramscene_rc
 from ProductionLineScene import (ProcessGraphic, ConstructProcessGraphicTree, FillScene)
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
+from EveDB import LoadBlueprint
 
 
 class MainWindow(QMainWindow):
@@ -25,9 +27,12 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
-		self.productionLine = ProductionLine(ProductionSchema(1, [2, 3], [4]))
-		self.productionLine.AddProcess(ProductionSchema(2, [1], [2]))
-		self.productionLine.AddProcess(ProductionSchema(3, [1], [3]))
+		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
+		connection = sqlite3.connect(dbFileName)
+		schema = LoadBlueprint(connection.cursor(), 939)
+		connection.close()
+
+		self.productionLine = ProductionLine(schema)
 
 		self.scene = QGraphicsScene()
 
