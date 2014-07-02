@@ -1,5 +1,5 @@
 
-from ProductionScheme import ProductionScheme
+from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
 
 from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
@@ -15,9 +15,9 @@ import unittest.mock
 class TestProductionLineScene(unittest.TestCase):
 
 	def test_ConstructTree(self):
-		line = ProductionLine(ProductionScheme(1, [2, 3], [4]))
-		line.AddProcess(ProductionScheme(2, [1], [2]))
-		line.AddProcess(ProductionScheme(2, [1], [3]))
+		line = ProductionLine(ProductionSchema(1, [2, 3], [4]))
+		line.AddProcess(ProductionSchema(2, [1], [2]))
+		line.AddProcess(ProductionSchema(2, [1], [3]))
 		graphics = ConstructProcessGraphicTree(line)
 		assert len(graphics[0].inputs[0].children) == 1
 		assert len(graphics[0].inputs[1].children) == 1
@@ -25,9 +25,9 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(graphics[2].inputs[0].children) == 0
 
 	def test_ConstructCyclesTree(self):
-		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
-		line.AddProcess(ProductionScheme(2, [2], [3]))
-		line.AddProcess(ProductionScheme(3, [1], [2, 4]))
+		line = ProductionLine(ProductionSchema(1, [3, 4], [5]))
+		line.AddProcess(ProductionSchema(2, [2], [3]))
+		line.AddProcess(ProductionSchema(3, [1], [2, 4]))
 		graphics = ConstructProcessGraphicTree(line)
 
 		assert len(graphics[0].inputs[0].children) == 1
@@ -36,9 +36,9 @@ class TestProductionLineScene(unittest.TestCase):
 		assert len(graphics[2].inputs[0].children) == 0
 
 	def test_ConstructMultipleOutputsTree(self):
-		line = ProductionLine(ProductionScheme(1, [3, 4], [5]))
-		line.AddProcess(ProductionScheme(2, [2], [3]))
-		line.AddProcess(ProductionScheme(3, [1], [3, 4]))
+		line = ProductionLine(ProductionSchema(1, [3, 4], [5]))
+		line.AddProcess(ProductionSchema(2, [2], [3]))
+		line.AddProcess(ProductionSchema(3, [1], [3, 4]))
 		graphics = ConstructProcessGraphicTree(line)
 
 		assert len(graphics[0].inputs[0].children) == 2
@@ -81,13 +81,13 @@ class ProcessGraphic(QGraphicsItem):
 		width = 200
 		inputOffset = 50
 
-		for inp in self.process.scheme.inputs:
+		for inp in self.process.schema.inputs:
 			inputOffset = inputOffset + 50
 			itemStack = ItemStackGraphic(inp, self, QPointF(-20, inputOffset))
 			self.inputs.append(itemStack)
 
 		outputOffset = 50
-		for out in self.process.scheme.outputs:
+		for out in self.process.schema.outputs:
 			outputOffset = outputOffset + 50
 			itemStack = ItemStackGraphic(out, self, QPointF(width - 40, outputOffset))
 			self.outputs.append(itemStack)
@@ -107,7 +107,7 @@ class ProcessGraphic(QGraphicsItem):
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())
+		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.schema.GetName())
 
 	def boundingRect(self):
 		return self.rect

@@ -1,6 +1,6 @@
 
 class ProductionProcess:
-	def __init__(self, aScheme):
-		self.scheme = aScheme
+	def __init__(self, aSchema):
+		self.schema = aSchema
 		self.runs = 1
 

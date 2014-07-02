@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 import diagramscene_rc
 
 from ProductionLineScene import (ProcessGraphic, ConstructProcessGraphicTree, FillScene)
-from ProductionScheme import ProductionScheme
+from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
 
 
@@ -25,9 +25,9 @@ class MainWindow(QMainWindow):
 	def __init__(self):
 		super(MainWindow, self).__init__()
 
-		self.productionLine = ProductionLine(ProductionScheme(1, [2, 3], [4]))
-		self.productionLine.AddProcess(ProductionScheme(2, [1], [2]))
-		self.productionLine.AddProcess(ProductionScheme(3, [1], [3]))
+		self.productionLine = ProductionLine(ProductionSchema(1, [2, 3], [4]))
+		self.productionLine.AddProcess(ProductionSchema(2, [1], [2]))
+		self.productionLine.AddProcess(ProductionSchema(3, [1], [3]))
 
 		self.scene = QGraphicsScene()
 

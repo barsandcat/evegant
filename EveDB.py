@@ -23,7 +23,7 @@ dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 
 class BluePrint:
 	def __init__(self, aId, aName, aInputs, aOutput):
-		self.schemeId = aId
+		self.schemaId = aId
 		self.name = aName
 		self.inputs = aInputs
 		self.output = aOutput
