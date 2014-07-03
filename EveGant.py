@@ -73,9 +73,9 @@ class MainWindow(QMainWindow):
 				button.setChecked(False)
 
 	def sceneScaleChanged(self, scale):
-		newScale = scale.left(scale.indexOf("%")).toDouble()[0] / 100.0
-		oldMatrix = self.view.matrix()
-		self.view.resetMatrix()
+		newScale = float(scale[:-1]) / 100.0
+		oldMatrix = self.view.transform()
+		self.view.resetTransform()
 		self.view.translate(oldMatrix.dx(), oldMatrix.dy())
 		self.view.scale(newScale, newScale)
 
