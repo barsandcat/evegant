@@ -19,7 +19,7 @@ import diagramscene_rc
 from ProductionLineScene import (ProcessGraphic, ConstructProcessGraphicTree, FillScene)
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
-from EveDB import LoadBlueprint
+from EveDB import (LoadBlueprint, LoadRefine)
 
 
 class MainWindow(QMainWindow):
@@ -29,19 +29,19 @@ class MainWindow(QMainWindow):
 
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
-		schema1 = LoadBlueprint(connection.cursor(), 20188)
-		schema2 = LoadBlueprint(connection.cursor(), 21010)
-		schema3 = LoadBlueprint(connection.cursor(), 21018)
-		schema4 = LoadBlueprint(connection.cursor(), 21028)
-		schema5 = LoadBlueprint(connection.cursor(), 21038)
+
+		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038))
+
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224))
 
 		connection.close()
-
-		self.productionLine = ProductionLine(schema1)
-		self.productionLine.AddProcess(schema2)
-		self.productionLine.AddProcess(schema3)
-		self.productionLine.AddProcess(schema4)
-		self.productionLine.AddProcess(schema5)
 
 		self.scene = QGraphicsScene()
 

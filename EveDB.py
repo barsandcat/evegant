@@ -34,6 +34,40 @@ class BluePrint:
 	def GetName(self):
 		return self.name
 
+class Refine:
+	def __init__(self, aId, aName, aInput, aOutputs):
+		self.schemaId = aId
+		self.name = aName
+		self.input = aInput
+		self.outputs = aOutputs
+
+	def GetOutputs(self):
+		return self.outputs
+
+	def GetInputs(self):
+		return [self.input]
+
+	def GetName(self):
+		return "Refine " + self.name
+
+
+
+def LoadRefine(aCursor, aTypeId):
+	
+	aCursor.execute("SELECT materialTypeID, quantity "
+		"FROM invTypeMaterials "
+		"WHERE typeID = ? ",	(aTypeId,))
+	rows = aCursor.fetchall()
+
+	outputs = [row[0] for row in rows]
+
+	aCursor.execute("SELECT typeName "
+		"FROM invTypes t "
+		"WHERE typeID = ? ", (aTypeId,))
+	row = aCursor.fetchone()
+
+	return Refine(aTypeId, row[0], aTypeId, outputs)
+
 
 def LoadBlueprint(aCursor, aBlueprintId):
 	
