@@ -29,10 +29,19 @@ class MainWindow(QMainWindow):
 
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
-		schema = LoadBlueprint(connection.cursor(), 939)
+		schema1 = LoadBlueprint(connection.cursor(), 20188)
+		schema2 = LoadBlueprint(connection.cursor(), 21010)
+		schema3 = LoadBlueprint(connection.cursor(), 21018)
+		schema4 = LoadBlueprint(connection.cursor(), 21028)
+		schema5 = LoadBlueprint(connection.cursor(), 21038)
+
 		connection.close()
 
-		self.productionLine = ProductionLine(schema)
+		self.productionLine = ProductionLine(schema1)
+		self.productionLine.AddProcess(schema2)
+		self.productionLine.AddProcess(schema3)
+		self.productionLine.AddProcess(schema4)
+		self.productionLine.AddProcess(schema5)
 
 		self.scene = QGraphicsScene()
 

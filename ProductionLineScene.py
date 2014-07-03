@@ -97,20 +97,19 @@ class ProcessGraphic(QGraphicsItem):
 
 		icon = QGraphicsPixmapItem(GetTypePixmap(self.process.schema.schemaId, 32), self)
 		
-		width = 200
-		inputOffset = 0
+		width = 160
 		space = 40
+
+		inputOffset = 0
+		outputOffset = 0
 
 		for inp in self.process.schema.GetInputs():
 			inputOffset = inputOffset + space
-			itemStack = ItemStackGraphic(inp, self, QPointF(0, inputOffset))
-			self.inputs.append(itemStack)
+			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset)))
 
-		outputOffset = 0
 		for out in self.process.schema.GetOutputs():
 			outputOffset = outputOffset + space
-			itemStack = ItemStackGraphic(out, self, QPointF(width, outputOffset))
-			self.outputs.append(itemStack)
+			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset)))
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 
