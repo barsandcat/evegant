@@ -50,13 +50,9 @@ class MainWindow(QMainWindow):
 			
 		self.createActions()
 		self.createMenus()
-		self.createToolBox()
-
-
 		self.createToolbars()
 
 		layout = QHBoxLayout()
-		layout.addWidget(self.toolBox)
 		self.view = QGraphicsView(self.scene)
 		layout.addWidget(self.view)
 
@@ -66,12 +62,6 @@ class MainWindow(QMainWindow):
 		self.setCentralWidget(self.widget)
 		self.setWindowTitle("Diagramscene")
 
-	def buttonGroupClicked(self, id):
-		buttons = self.buttonGroup.buttons()
-		for button in buttons:
-			if self.buttonGroup.button(id) != button:
-				button.setChecked(False)
-
 	def sceneScaleChanged(self, scale):
 		newScale = float(scale[:-1]) / 100.0
 		oldMatrix = self.view.transform()
@@ -80,29 +70,7 @@ class MainWindow(QMainWindow):
 		self.view.scale(newScale, newScale)
 
 	def about(self):
-		QMessageBox.about(self, "About Diagram Scene",
-				"The <b>Diagram Scene</b> example shows use of the graphics framework.")
-
-	def createToolBox(self):
-		self.buttonGroup = QButtonGroup()
-		self.buttonGroup.setExclusive(False)
-		self.buttonGroup.buttonClicked[int].connect(self.buttonGroupClicked)
-
-		button = QToolButton()
-		button.setIconSize(QSize(50, 50))
-		button.setCheckable(False)
-		self.buttonGroup.addButton(button)
-
-		layout = QGridLayout()
-		layout.addWidget(button, 0, 1)
-
-		itemWidget = QWidget()
-		itemWidget.setLayout(layout)
-
-		self.toolBox = QToolBox()
-		self.toolBox.setSizePolicy(QSizePolicy(QSizePolicy.Maximum, QSizePolicy.Ignored))
-		self.toolBox.setMinimumWidth(itemWidget.sizeHint().width())
-		self.toolBox.addItem(itemWidget, "Basic Flowchart Shapes")
+		QMessageBox.about(self, "EveGant", "Eve online industrial planning and traking tool")
 
 	def createActions(self):
 		self.exitAction = QAction("E&xit", self, shortcut="Ctrl+X",
@@ -112,21 +80,21 @@ class MainWindow(QMainWindow):
 				triggered=self.about)
 
 	def createMenus(self):
-		self.fileMenu = self.menuBar().addMenu("&File")
-		self.fileMenu.addAction(self.exitAction)
+		fileMenu = self.menuBar().addMenu("&File")
+		fileMenu.addAction(self.exitAction)
 
-		self.aboutMenu = self.menuBar().addMenu("&Help")
-		self.aboutMenu.addAction(self.aboutAction)
+		aboutMenu = self.menuBar().addMenu("&Help")
+		aboutMenu.addAction(self.aboutAction)
 
 	def createToolbars(self):
 
-		self.sceneScaleCombo = QComboBox()
-		self.sceneScaleCombo.addItems(["50%", "75%", "100%", "125%", "150%"])
-		self.sceneScaleCombo.setCurrentIndex(2)
-		self.sceneScaleCombo.currentIndexChanged[str].connect(self.sceneScaleChanged)
+		sceneScaleCombo = QComboBox()
+		sceneScaleCombo.addItems(["50%", "75%", "100%", "125%", "150%"])
+		sceneScaleCombo.setCurrentIndex(2)
+		sceneScaleCombo.currentIndexChanged[str].connect(self.sceneScaleChanged)
 
-		self.pointerToolbar = self.addToolBar("Pointer type")
-		self.pointerToolbar.addWidget(self.sceneScaleCombo)
+		pointerToolbar = self.addToolBar("Pointer type")
+		pointerToolbar.addWidget(sceneScaleCombo)
 
 
 if __name__ == '__main__':
