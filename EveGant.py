@@ -48,19 +48,19 @@ class MainWindow(QMainWindow):
 		graphics = ConstructProcessGraphicTree(self.productionLine)
 		FillScene(self.scene, graphics)
 			
-		self.createActions()
-		self.createMenus()
-		self.createToolbars()
-
 		layout = QHBoxLayout()
 		self.view = QGraphicsView(self.scene)
 		layout.addWidget(self.view)
 
-		self.widget = QWidget()
-		self.widget.setLayout(layout)
+		widget = QWidget()
+		widget.setLayout(layout)
 
-		self.setCentralWidget(self.widget)
-		self.setWindowTitle("Diagramscene")
+		self.setCentralWidget(widget)
+		self.setWindowTitle("EveGant")
+
+		self.createMenus()
+		self.createToolbars()
+
 
 	def sceneScaleChanged(self, scale):
 		newScale = float(scale[:-1]) / 100.0
@@ -72,19 +72,18 @@ class MainWindow(QMainWindow):
 	def about(self):
 		QMessageBox.about(self, "EveGant", "Eve online industrial planning and traking tool")
 
-	def createActions(self):
-		self.exitAction = QAction("E&xit", self, shortcut="Ctrl+X",
+	def createMenus(self):
+		exitAction = QAction("E&xit", self, shortcut="Ctrl+X",
 				statusTip="Quit Scenediagram example", triggered=self.close)
 
-		self.aboutAction = QAction("A&bout", self, shortcut="Ctrl+B",
+		aboutAction = QAction("A&bout", self, shortcut="Ctrl+B",
 				triggered=self.about)
 
-	def createMenus(self):
 		fileMenu = self.menuBar().addMenu("&File")
-		fileMenu.addAction(self.exitAction)
+		fileMenu.addAction(exitAction)
 
 		aboutMenu = self.menuBar().addMenu("&Help")
-		aboutMenu.addAction(self.aboutAction)
+		aboutMenu.addAction(aboutAction)
 
 	def createToolbars(self):
 
