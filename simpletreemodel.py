@@ -50,31 +50,31 @@ import simpletreemodel_rc
 import sqlite3
 
 class TreeItem:
-	def __init__(self, aName, parent=None):
-		self.parentItem = parent
+	def __init__(self, aName, aParent=None):
+		self.parent = aParent
 		self.name = aName
-		self.childItems = []
+		self.children = []
 
-	def AppendChild(self, item):
-		self.childItems.append(item)
+	def AppendChild(self, aItem):
+		self.children.append(aItem)
 
-	def Child(self, row):
-		return self.childItems[row]
+	def SetParent(self, aParent):
+		self.parent = aParent
 
-	def ChildCount(self):
-		return len(self.childItems)
+	def GetChild(self, row):
+		return self.children[row]
+
+	def GetChildCount(self):
+		return len(self.children)
+
+	def GetIndexOfChild(self, aChild):
+		return self.children.index(aChild)
 
 	def GetName(self):
 		return self.name
 
-	def Parent(self):
-		return self.parentItem
-
-	def Row(self):
-		if self.parentItem:
-			return self.parentItem.childItems.index(self)
-
-		return 0
+	def GetParent(self):
+		return self.parent
 
 
 class EveTypesModel(QAbstractItemModel):
@@ -83,7 +83,20 @@ class EveTypesModel(QAbstractItemModel):
 		self.rootItem = aRootItem
 
 	def columnCount(self, parent):
+		#For simple tree, column is always 0
 		return 1
+
+	def rowCount(self, parent):
+		#For tree rowCount is children count
+		if parent.column() > 0:
+			return 0
+
+		if not parent.isValid():
+			parentItem = self.rootItem
+		else:
+			parentItem = parent.internalPointer()
+
+		return parentItem.GetChildCount()
 
 	def data(self, index, role):
 		if not index.isValid():
@@ -109,6 +122,7 @@ class EveTypesModel(QAbstractItemModel):
 		return None
 
 	def index(self, row, column, parent):
+		#Return QModelIndex with item, by child index(row) of a parent. Column is irrelevant
 		if not self.hasIndex(row, column, parent):
 			return QModelIndex()
 
@@ -117,41 +131,46 @@ class EveTypesModel(QAbstractItemModel):
 		else:
 			parentItem = parent.internalPointer()
 
-		childItem = parentItem.Child(row)
+		childItem = parentItem.GetChild(row)
 		if childItem:
 			return self.createIndex(row, column, childItem)
 		else:
 			return QModelIndex()
 
 	def parent(self, index):
+		#Retrieving the parent QModelIndex from a child is a bit more work than
+		#finding a parent's child. We can easily retrieve the parent node using
+		#internalPointer() and going up using the Node's parent pointer, but to
+		#obtain the row number (the position of the parent among its siblings),
+		#we need to go back to the grandparent and find the parent's index
+		#position in its parent's (i.e., the child's grandparent's) list of
+		#children.
 		if not index.isValid():
 			return QModelIndex()
 
-		childItem = index.internalPointer()
-		parentItem = childItem.Parent()
-
-		if parentItem == self.rootItem:
+		item = index.internalPointer()
+		parent = item.GetParent()
+		if not parent:
 			return QModelIndex()
 
-		return self.createIndex(parentItem.Row(), 0, parentItem)
+		if parent == self.rootItem:
+			return QModelIndex()
 
-	def rowCount(self, parent):
-		if parent.column() > 0:
-			return 0
+		row = 0
+		grandParent = parent.GetParent()
+		if grandParent:
+			row = grandParent.GetIndexOfChild(parent)
 
-		if not parent.isValid():
-			parentItem = self.rootItem
-		else:
-			parentItem = parent.internalPointer()
+		return self.createIndex(row, 0, parent)
 
-		return parentItem.ChildCount()
+
 
 
 def SetupModelData():
 	rootItem = TreeItem("Type")
 	connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
 	cursor = connection.cursor()
-	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName, iconID FROM invMarketGroups")
+	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
 	marketGroups = {}
 	for row in cursor:            
 		groupID = row[0]
@@ -160,12 +179,12 @@ def SetupModelData():
 		marketGroups[groupID] = TreeItem(groupName, parentID)
 	
 	for key, child in marketGroups.items():
-		parentID = child.Parent()
+		parentID = child.GetParent()
 		if parentID:
 			parent = marketGroups[parentID]
 		else:
 			parent = rootItem
-		child.parentItem = parent
+		child.SetParent(parent)
 		parent.AppendChild(child)
 
 	return rootItem
