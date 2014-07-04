@@ -50,146 +50,139 @@ import simpletreemodel_rc
 import sqlite3
 
 class TreeItem:
-    def __init__(self, data, parent=None):
-        self.parentItem = parent
-        self.itemData = data
-        self.childItems = []
+	def __init__(self, aName, parent=None):
+		self.parentItem = parent
+		self.name = aName
+		self.childItems = []
 
-    def AppendChild(self, item):
-        self.childItems.append(item)
+	def AppendChild(self, item):
+		self.childItems.append(item)
 
-    def Child(self, row):
-        return self.childItems[row]
+	def Child(self, row):
+		return self.childItems[row]
 
-    def ChildCount(self):
-        return len(self.childItems)
+	def ChildCount(self):
+		return len(self.childItems)
 
-    def ColumnCount(self):
-        return len(self.itemData)
+	def GetName(self):
+		return self.name
 
-    def Data(self, column):
-        try:
-            return self.itemData[column]
-        except IndexError:
-            return None
+	def Parent(self):
+		return self.parentItem
 
-    def Parent(self):
-        return self.parentItem
+	def Row(self):
+		if self.parentItem:
+			return self.parentItem.childItems.index(self)
 
-    def Row(self):
-        if self.parentItem:
-            return self.parentItem.childItems.index(self)
-
-        return 0
+		return 0
 
 
-class TreeModel(QAbstractItemModel):
-    def __init__(self):
-        super(TreeModel, self).__init__(None)
+class EveTypesModel(QAbstractItemModel):
+	def __init__(self, aRootItem):
+		super().__init__(None)
+		self.rootItem = aRootItem
 
-        self.rootItem = TreeItem(("Title", "Summary"))
-        self.SetupModelData()
+	def columnCount(self, parent):
+		return 1
 
-    def columnCount(self, parent):
-        if parent.isValid():
-            return parent.internalPointer().ColumnCount()
-        else:
-            return self.rootItem.ColumnCount()
+	def data(self, index, role):
+		if not index.isValid():
+			return None
 
-    def data(self, index, role):
-        if not index.isValid():
-            return None
+		if role != Qt.DisplayRole:
+			return None
 
-        if role != Qt.DisplayRole:
-            return None
+		item = index.internalPointer()
 
-        item = index.internalPointer()
+		return item.GetName()
 
-        return item.Data(index.column())
+	def flags(self, index):
+		if not index.isValid():
+			return Qt.NoItemFlags
 
-    def flags(self, index):
-        if not index.isValid():
-            return Qt.NoItemFlags
+		return Qt.ItemIsEnabled | Qt.ItemIsSelectable
 
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+	def headerData(self, section, orientation, role):
+		if orientation == Qt.Horizontal and role == Qt.DisplayRole:
+			return self.rootItem.GetName()
 
-    def headerData(self, section, orientation, role):
-        if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.rootItem.Data(section)
+		return None
 
-        return None
+	def index(self, row, column, parent):
+		if not self.hasIndex(row, column, parent):
+			return QModelIndex()
 
-    def index(self, row, column, parent):
-        if not self.hasIndex(row, column, parent):
-            return QModelIndex()
+		if not parent.isValid():
+			parentItem = self.rootItem
+		else:
+			parentItem = parent.internalPointer()
 
-        if not parent.isValid():
-            parentItem = self.rootItem
-        else:
-            parentItem = parent.internalPointer()
+		childItem = parentItem.Child(row)
+		if childItem:
+			return self.createIndex(row, column, childItem)
+		else:
+			return QModelIndex()
 
-        childItem = parentItem.Child(row)
-        if childItem:
-            return self.createIndex(row, column, childItem)
-        else:
-            return QModelIndex()
+	def parent(self, index):
+		if not index.isValid():
+			return QModelIndex()
 
-    def parent(self, index):
-        if not index.isValid():
-            return QModelIndex()
+		childItem = index.internalPointer()
+		parentItem = childItem.Parent()
 
-        childItem = index.internalPointer()
-        parentItem = childItem.Parent()
+		if parentItem == self.rootItem:
+			return QModelIndex()
 
-        if parentItem == self.rootItem:
-            return QModelIndex()
+		return self.createIndex(parentItem.Row(), 0, parentItem)
 
-        return self.createIndex(parentItem.Row(), 0, parentItem)
+	def rowCount(self, parent):
+		if parent.column() > 0:
+			return 0
 
-    def rowCount(self, parent):
-        if parent.column() > 0:
-            return 0
+		if not parent.isValid():
+			parentItem = self.rootItem
+		else:
+			parentItem = parent.internalPointer()
 
-        if not parent.isValid():
-            parentItem = self.rootItem
-        else:
-            parentItem = parent.internalPointer()
+		return parentItem.ChildCount()
 
-        return parentItem.ChildCount()
 
-    def SetupModelData(self):
-        connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
-        cursor = connection.cursor()
-        cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName, iconID FROM invMarketGroups")
+def SetupModelData():
+	rootItem = TreeItem("Type")
+	connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
+	cursor = connection.cursor()
+	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName, iconID FROM invMarketGroups")
+	marketGroups = {}
+	for row in cursor:            
+		groupID = row[0]
+		parentID = row[1]
+		groupName = row[2]
+		marketGroups[groupID] = TreeItem(groupName, parentID)
+	
+	for key, child in marketGroups.items():
+		parentID = child.Parent()
+		if parentID:
+			parent = marketGroups[parentID]
+		else:
+			parent = rootItem
+		child.parentItem = parent
+		parent.AppendChild(child)
 
-        marketGroups = {}
-        for row in cursor:            
-            groupID = row[0]
-            parentID = row[1]
-            groupName = row[2]
-            marketGroups[groupID] = TreeItem([groupName], parentID)
-        
-        for key, child in marketGroups.items():
-            parentID = child.Parent()
-            if parentID:
-                parent = marketGroups[parentID]
-            else:
-                parent = self.rootItem
-
-            child.parentItem = parent
-            parent.AppendChild(child)
+	return rootItem
 
 
 if __name__ == '__main__':
 
-    import sys
+	import sys
 
-    app = QApplication(sys.argv)
+	app = QApplication(sys.argv)
 
-    model = TreeModel()
+	rootItem = SetupModelData()
 
-    view = QTreeView()
-    view.setModel(model)
-    view.setWindowTitle("Simple Tree Model")
-    view.show()
-    sys.exit(app.exec_())
+	model = EveTypesModel(rootItem)
+
+	view = QTreeView()
+	view.setModel(model)
+	view.setWindowTitle("Simple Tree Model")
+	view.show()
+	sys.exit(app.exec_())
