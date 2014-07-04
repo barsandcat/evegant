@@ -49,34 +49,34 @@ import simpletreemodel_rc
 
 import sqlite3
 
-class TreeItem(object):
+class TreeItem:
     def __init__(self, data, parent=None):
         self.parentItem = parent
         self.itemData = data
         self.childItems = []
 
-    def appendChild(self, item):
+    def AppendChild(self, item):
         self.childItems.append(item)
 
-    def child(self, row):
+    def Child(self, row):
         return self.childItems[row]
 
-    def childCount(self):
+    def ChildCount(self):
         return len(self.childItems)
 
-    def columnCount(self):
+    def ColumnCount(self):
         return len(self.itemData)
 
-    def data(self, column):
+    def Data(self, column):
         try:
             return self.itemData[column]
         except IndexError:
             return None
 
-    def parent(self):
+    def Parent(self):
         return self.parentItem
 
-    def row(self):
+    def Row(self):
         if self.parentItem:
             return self.parentItem.childItems.index(self)
 
@@ -88,13 +88,13 @@ class TreeModel(QAbstractItemModel):
         super(TreeModel, self).__init__(None)
 
         self.rootItem = TreeItem(("Title", "Summary"))
-        self.setupModelData()
+        self.SetupModelData()
 
     def columnCount(self, parent):
         if parent.isValid():
-            return parent.internalPointer().columnCount()
+            return parent.internalPointer().ColumnCount()
         else:
-            return self.rootItem.columnCount()
+            return self.rootItem.ColumnCount()
 
     def data(self, index, role):
         if not index.isValid():
@@ -105,7 +105,7 @@ class TreeModel(QAbstractItemModel):
 
         item = index.internalPointer()
 
-        return item.data(index.column())
+        return item.Data(index.column())
 
     def flags(self, index):
         if not index.isValid():
@@ -115,7 +115,7 @@ class TreeModel(QAbstractItemModel):
 
     def headerData(self, section, orientation, role):
         if orientation == Qt.Horizontal and role == Qt.DisplayRole:
-            return self.rootItem.data(section)
+            return self.rootItem.Data(section)
 
         return None
 
@@ -128,7 +128,7 @@ class TreeModel(QAbstractItemModel):
         else:
             parentItem = parent.internalPointer()
 
-        childItem = parentItem.child(row)
+        childItem = parentItem.Child(row)
         if childItem:
             return self.createIndex(row, column, childItem)
         else:
@@ -139,12 +139,12 @@ class TreeModel(QAbstractItemModel):
             return QModelIndex()
 
         childItem = index.internalPointer()
-        parentItem = childItem.parent()
+        parentItem = childItem.Parent()
 
         if parentItem == self.rootItem:
             return QModelIndex()
 
-        return self.createIndex(parentItem.row(), 0, parentItem)
+        return self.createIndex(parentItem.Row(), 0, parentItem)
 
     def rowCount(self, parent):
         if parent.column() > 0:
@@ -155,9 +155,9 @@ class TreeModel(QAbstractItemModel):
         else:
             parentItem = parent.internalPointer()
 
-        return parentItem.childCount()
+        return parentItem.ChildCount()
 
-    def setupModelData(self):
+    def SetupModelData(self):
         connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
         cursor = connection.cursor()
         cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName, iconID FROM invMarketGroups")
@@ -170,14 +170,14 @@ class TreeModel(QAbstractItemModel):
             marketGroups[groupID] = TreeItem([groupName], parentID)
         
         for key, child in marketGroups.items():
-            parentID = child.parent()
+            parentID = child.Parent()
             if parentID:
                 parent = marketGroups[parentID]
             else:
                 parent = self.rootItem
 
             child.parentItem = parent
-            parent.appendChild(child)
+            parent.AppendChild(child)
 
 
 if __name__ == '__main__':
