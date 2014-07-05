@@ -30,11 +30,11 @@ class MainWindow(QMainWindow):
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
 
-		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038))
+		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038, None))
 
 		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228))
 		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18))
@@ -45,7 +45,8 @@ class MainWindow(QMainWindow):
 
 		self.scene = QGraphicsScene()
 
-		graphics = ConstructProcessGraphicTree(self.productionLine)
+		graphics = [ProcessGraphic(process) for process in self.productionLine.processes]
+		ConstructProcessGraphicTree(graphics)
 		FillScene(self.scene, graphics)
 			
 		layout = QHBoxLayout()

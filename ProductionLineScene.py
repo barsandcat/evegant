@@ -6,7 +6,7 @@ from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
 from PyQt5.QtGui import (QBrush, QColor, QFont, QIcon, QIntValidator, QPainter,
 		QPainterPath, QPen, QPixmap, QPolygonF)
-from PyQt5.QtWidgets import (QGraphicsItem, QGraphicsPixmapItem, QGraphicsPathItem, QGraphicsScene)
+from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QGraphicsPathItem, QGraphicsScene
 
 
 import unittest
@@ -21,7 +21,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionSchema(1, [2, 3], [4]))
 		line.AddProcess(ProductionSchema(2, [1], [2]))
 		line.AddProcess(ProductionSchema(2, [1], [3]))
-		graphics = ConstructProcessGraphicTree(line)
+		graphics = [ProcessGraphic(process) for process in line.processes]
+		ConstructProcessGraphicTree(graphics)
 		assert len(graphics[0].inputs[0].children) == 1
 		assert len(graphics[0].inputs[1].children) == 1
 		assert len(graphics[1].inputs[0].children) == 0
@@ -31,8 +32,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionSchema(1, [3, 4], [5]))
 		line.AddProcess(ProductionSchema(2, [2], [3]))
 		line.AddProcess(ProductionSchema(3, [1], [2, 4]))
-		graphics = ConstructProcessGraphicTree(line)
-
+		graphics = [ProcessGraphic(process) for process in line.processes]
+		ConstructProcessGraphicTree(graphics)
 		assert len(graphics[0].inputs[0].children) == 1
 		assert len(graphics[0].inputs[1].children) == 1
 		assert len(graphics[1].inputs[0].children) == 1
@@ -42,8 +43,8 @@ class TestProductionLineScene(unittest.TestCase):
 		line = ProductionLine(ProductionSchema(1, [3, 4], [5]))
 		line.AddProcess(ProductionSchema(2, [2], [3]))
 		line.AddProcess(ProductionSchema(3, [1], [3, 4]))
-		graphics = ConstructProcessGraphicTree(line)
-
+		graphics = [ProcessGraphic(process) for process in line.processes]
+		ConstructProcessGraphicTree(graphics)
 		assert len(graphics[0].inputs[0].children) == 2
 		assert len(graphics[0].inputs[1].children) == 1
 		assert len(graphics[1].inputs[0].children) == 0
@@ -131,8 +132,7 @@ def GetTypePixmap(aTypeId, aSize):
 	return pixmap
 
 
-def ConstructProcessGraphicTree(aProductionLine):
-	graphics = [ProcessGraphic(process) for process in aProductionLine.processes]
+def ConstructProcessGraphicTree(graphics):
 
 	outputsByItemId = {}
 	for graphic in graphics:

@@ -13,17 +13,17 @@ class TestEveDB(unittest.TestCase):
 		cursor = Mock()
 		cursor.fetchall = Mock(return_value = [(34, 2730), (35, 214), (36, 303), (37, 4), (38, 2), (39, 2)])
 		cursor.fetchone = Mock(return_value = (939, 592, 'Navitas Blueprint'))
-		bp = LoadBlueprint(cursor, 939)
+		bp = LoadBlueprint(cursor, 939, None)
 		self.assertEqual(len(bp.GetOutputs()), 1)
 		self.assertEqual(len(bp.GetInputs()), 6)
 
-
 class BluePrint:
-	def __init__(self, aId, aName, aInputs, aOutput):
+	def __init__(self, aId, aName, aGroup, aInputs, aOutput):
 		self.schemaId = aId
 		self.name = aName
 		self.inputs = aInputs
 		self.output = aOutput
+		self.group = aGroup
 
 	def GetOutputs(self):
 		return [self.output]
@@ -33,6 +33,19 @@ class BluePrint:
 
 	def GetName(self):
 		return self.name
+
+	def GetChild(self, row):
+		return None
+
+	def GetChildCount(self):
+		return 0
+
+	def GetIndexOfChild(self, aChild):
+		return 0
+
+	def GetParent(self):
+		return self.group
+
 
 class Refine:
 	def __init__(self, aId, aName, aInput, aOutputs):
@@ -69,7 +82,7 @@ def LoadRefine(aCursor, aTypeId):
 	return Refine(aTypeId, row[0], aTypeId, outputs)
 
 
-def LoadBlueprint(aCursor, aBlueprintId):
+def LoadBlueprint(aCursor, aBlueprintId, aGroup):
 	
 	aCursor.execute("SELECT tm.materialTypeID, quantity "
 		"FROM invTypeMaterials tm, invBlueprintTypes bt "
@@ -84,5 +97,5 @@ def LoadBlueprint(aCursor, aBlueprintId):
 		"AND bt.blueprintTypeID = t.typeID;", (aBlueprintId,))
 	row = aCursor.fetchone()
 
-	return BluePrint(row[0], row[2], inputs, row[1])
+	return BluePrint(row[0], row[2], aGroup, inputs, row[1])
 	
