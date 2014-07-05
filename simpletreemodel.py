@@ -49,7 +49,16 @@ import simpletreemodel_rc
 
 import sqlite3
 
-class TreeItem:
+from logging import warning, info, error
+
+connection = None
+def GetDBCursor():
+	global connection
+	if not connection:
+		connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
+	return connection.cursor()
+
+class MarketGroup:
 	def __init__(self, aName, aParent=None):
 		self.parent = aParent
 		self.name = aName
@@ -75,6 +84,46 @@ class TreeItem:
 
 	def GetParent(self):
 		return self.parent
+
+
+class LazyMarketGroup:
+	def __init__(self, aMarketGroupId, aName, aParent=None):
+		self.parent = aParent
+		self.name = aName
+		self.children = None
+		self.marketGroupId = aMarketGroupId
+
+	def CacheChildren(self):
+		if self.children == None:
+			cursor = GetDBCursor()
+			cursor.execute("SELECT marketGroupID, marketGroupName FROM invMarketGroups WHERE parentGroupID = ?", 
+				(self.marketGroupId,))
+			
+			self.children = []
+			for row in cursor:
+				marketGroupId = row[0]
+				name = row[1]
+				self.children.append(LazyMarketGroup(marketGroupId, name, self))
+
+
+	def GetChild(self, row):
+		self.CacheChildren()
+		return self.children[row]
+
+	def GetChildCount(self):
+		self.CacheChildren()
+		return len(self.children)
+
+	def GetIndexOfChild(self, aChild):
+		self.CacheChildren()
+		return self.children.index(aChild)
+
+	def GetName(self):
+		return self.name
+
+	def GetParent(self):
+		return self.parent
+
 
 
 class EveTypesModel(QAbstractItemModel):
@@ -164,30 +213,13 @@ class EveTypesModel(QAbstractItemModel):
 		return self.createIndex(row, 0, parent)
 
 
-
-
 def SetupModelData():
-	rootItem = TreeItem("Type")
-	connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
-	cursor = connection.cursor()
-	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
-	marketGroups = {}
-	for row in cursor:            
-		groupID = row[0]
-		parentID = row[1]
-		groupName = row[2]
-		marketGroups[groupID] = TreeItem(groupName, parentID)
-	
-	for key, child in marketGroups.items():
-		parentID = child.GetParent()
-		if parentID:
-			parent = marketGroups[parentID]
-		else:
-			parent = rootItem
-		child.SetParent(parent)
-		parent.AppendChild(child)
-
+	rootItem = MarketGroup("Type")
+	rootItem.AppendChild(LazyMarketGroup(2, "Blueprints", rootItem))
+	rootItem.AppendChild(LazyMarketGroup(54, "Ore", rootItem))
+	rootItem.AppendChild(LazyMarketGroup(493, "Ice Ore", rootItem))
 	return rootItem
+
 
 
 if __name__ == '__main__':
