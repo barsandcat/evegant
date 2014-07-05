@@ -16,16 +16,19 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 
 import diagramscene_rc
 
-from ProductionLineScene import (ProcessGraphic, ConstructProcessGraphicTree, FillScene)
+from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
-from EveDB import (LoadBlueprint, LoadRefine)
+from EveDB import LoadBlueprint, LoadRefine
+from ToolkitTypes import ToolkitTypes
 
 
 class MainWindow(QMainWindow):
  
 	def __init__(self):
 		super(MainWindow, self).__init__()
+
+		self.toolkitTypes = ToolkitTypes()
 
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
@@ -45,7 +48,7 @@ class MainWindow(QMainWindow):
 
 		self.scene = QGraphicsScene()
 
-		graphics = [ProcessGraphic(process) for process in self.productionLine.processes]
+		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
 		ConstructProcessGraphicTree(graphics)
 		FillScene(self.scene, graphics)
 			
