@@ -4,8 +4,6 @@
 from PyQt5.QtCore import QAbstractItemModel, QFile, QIODevice, QModelIndex, Qt
 from PyQt5.QtWidgets import QApplication, QTreeView
 
-import simpletreemodel_rc
-
 import sqlite3
 
 from logging import warning, info, error

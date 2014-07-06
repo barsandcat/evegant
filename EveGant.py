@@ -14,8 +14,6 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 		QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy,
 		QToolBox, QToolButton, QWidget)
 
-import diagramscene_rc
-
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
@@ -39,11 +37,11 @@ class MainWindow(QMainWindow):
 		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028, None))
 		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038, None))
 
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224))
-
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224, None))
+		
 		connection.close()
 
 		self.scene = QGraphicsScene()
