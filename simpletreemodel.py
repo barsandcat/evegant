@@ -10,7 +10,7 @@ import sqlite3
 
 from logging import warning, info, error
 
-from EveDB import BluePrint, LoadBlueprint, Refine
+from EveDB import BluePrint, LoadBlueprint, Refine, LoadRefine
 
 connection = None
 def GetDBCursor():
@@ -68,15 +68,18 @@ class LazyMarketGroup:
 				name = row[1]
 				self.children.append(LazyMarketGroup(marketGroupId, name, self))
 
-			#Load child blueprints
-			cursor.execute("SELECT typeID FROM invTypes, invBlueprintTypes WHERE typeID = blueprintTypeID AND marketGroupID = ?", 
-				(self.marketGroupId,))
+			#Load child types, if it is blueprint - should have not null blueprintID
+			cursor.execute("SELECT typeID, blueprintTypeID "
+				"FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID "
+				"WHERE marketGroupID = ?", (self.marketGroupId,))
 
-			blueprints = [row[0] for row in cursor]
-
-			for bpId in blueprints:
-				blueprint = LoadBlueprint(cursor, bpId, self)
-				self.children.append(blueprint)
+			for row in cursor:
+				if row[1]:
+					blueprint = LoadBlueprint(GetDBCursor(), row[1], self)
+					self.children.append(blueprint)
+				else:
+					refine = LoadRefine(GetDBCursor(), row[0], self)
+					self.children.append(refine)
 
 
 	def GetChild(self, row):

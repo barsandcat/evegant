@@ -48,11 +48,12 @@ class BluePrint:
 
 
 class Refine:
-	def __init__(self, aId, aName, aInput, aOutputs):
+	def __init__(self, aId, aName, aGroup, aInput, aOutputs):
 		self.schemaId = aId
 		self.name = aName
 		self.input = aInput
 		self.outputs = aOutputs
+		self.group = aGroup
 
 	def GetOutputs(self):
 		return self.outputs
@@ -61,11 +62,21 @@ class Refine:
 		return [self.input]
 
 	def GetName(self):
-		return "Refine " + self.name
+		return self.name
 
+	def GetChild(self, row):
+		return None
 
+	def GetChildCount(self):
+		return 0
 
-def LoadRefine(aCursor, aTypeId):
+	def GetIndexOfChild(self, aChild):
+		return 0
+
+	def GetParent(self):
+		return self.group
+
+def LoadRefine(aCursor, aTypeId, aGroup):
 	
 	aCursor.execute("SELECT materialTypeID, quantity "
 		"FROM invTypeMaterials "
@@ -79,7 +90,7 @@ def LoadRefine(aCursor, aTypeId):
 		"WHERE typeID = ? ", (aTypeId,))
 	row = aCursor.fetchone()
 
-	return Refine(aTypeId, row[0], aTypeId, outputs)
+	return Refine(aTypeId, row[0], aGroup, aTypeId, outputs)
 
 
 def LoadBlueprint(aCursor, aBlueprintId, aGroup):
