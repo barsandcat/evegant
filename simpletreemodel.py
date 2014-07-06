@@ -12,13 +12,6 @@ from logging import warning, info, error
 
 from EveDB import BluePrint, LoadBlueprint, Refine, LoadRefine
 
-connection = None
-def GetDBCursor():
-	global connection
-	if not connection:
-		connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
-	return connection.cursor()
-
 class MarketGroup:
 	def __init__(self, aName, aParent=None):
 		self.parent = aParent
@@ -48,16 +41,17 @@ class MarketGroup:
 
 
 class LazyMarketGroup:
-	def __init__(self, aMarketGroupId, aName, aParent=None):
+	def __init__(self, aMarketGroupId, aName, aParent, aDBConnection):
 		self.parent = aParent
 		self.name = aName
 		self.children = None
 		self.marketGroupId = aMarketGroupId
+		self.db = aDBConnection
 
 	def CacheChildren(self):
 		if self.children == None:
 			self.children = []
-			cursor = GetDBCursor()
+			cursor = self.db.cursor()
 			#Load child market groups
 			cursor.execute("SELECT marketGroupID, marketGroupName "
 				"FROM invMarketGroups WHERE parentGroupID = ?", 
@@ -66,7 +60,7 @@ class LazyMarketGroup:
 			for row in cursor:
 				marketGroupId = row[0]
 				name = row[1]
-				self.children.append(LazyMarketGroup(marketGroupId, name, self))
+				self.children.append(LazyMarketGroup(marketGroupId, name, self, self.db))
 
 			#Load child types, if it is blueprint - should have not null blueprintID
 			cursor.execute("SELECT typeID, blueprintTypeID "
@@ -75,10 +69,10 @@ class LazyMarketGroup:
 
 			for row in cursor:
 				if row[1]:
-					blueprint = LoadBlueprint(GetDBCursor(), row[1], self)
+					blueprint = LoadBlueprint(self.db.cursor(), row[1], self)
 					self.children.append(blueprint)
 				else:
-					refine = LoadRefine(GetDBCursor(), row[0], self)
+					refine = LoadRefine(self.db.cursor(), row[0], self)
 					self.children.append(refine)
 
 
@@ -191,9 +185,11 @@ class EveTypesModel(QAbstractItemModel):
 
 def SetupModelData():
 	rootItem = MarketGroup("Type")
-	rootItem.AppendChild(LazyMarketGroup(2, "Blueprints", rootItem))
-	rootItem.AppendChild(LazyMarketGroup(54, "Ore", rootItem))
-	rootItem.AppendChild(LazyMarketGroup(493, "Ice Ore", rootItem))
+	connection = sqlite3.connect("Eve toolkit/DATADUMP201403101147.db")
+
+	rootItem.AppendChild(LazyMarketGroup(2, "Blueprints", rootItem, connection))
+	rootItem.AppendChild(LazyMarketGroup(54, "Ore", rootItem, connection))
+	rootItem.AppendChild(LazyMarketGroup(493, "Ice Ore", rootItem, connection))
 	return rootItem
 
 
