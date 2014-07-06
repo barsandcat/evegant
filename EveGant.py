@@ -12,13 +12,15 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 		QFontComboBox, QGraphicsItem, QGraphicsLineItem, QGraphicsPolygonItem,
 		QGraphicsScene, QGraphicsTextItem, QGraphicsView, QGridLayout,
 		QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy,
-		QToolBox, QToolButton, QWidget)
+		QToolBox, QToolButton, QWidget, QTreeView, QSplitter)
 
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
 from EveDB import LoadBlueprint, LoadRefine
 from ToolkitTypes import ToolkitTypes
+from EveTypesModel import EveTypesModel
+from MarketGroup import MarketGroup, LazyMarketGroup
 
 
 class MainWindow(QMainWindow):
@@ -31,6 +33,7 @@ class MainWindow(QMainWindow):
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
 
+		# Temp fill in
 		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188, None))
 		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010, None))
 		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018, None))
@@ -42,22 +45,31 @@ class MainWindow(QMainWindow):
 		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227, None))
 		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224, None))
 		
-		connection.close()
 
-		self.scene = QGraphicsScene()
-
+		#Graph view setup
 		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
 		ConstructProcessGraphicTree(graphics)
-		FillScene(self.scene, graphics)
-			
-		layout = QHBoxLayout()
+
+		self.scene = QGraphicsScene()
+		FillScene(self.scene, graphics)			
 		self.view = QGraphicsView(self.scene)
-		layout.addWidget(self.view)
 
-		widget = QWidget()
-		widget.setLayout(layout)
+		#Tree view setup
+		treeRoot = MarketGroup("Type")
 
-		self.setCentralWidget(widget)
+		treeRoot.AppendChild(LazyMarketGroup(2, "Blueprints", treeRoot, connection))
+		treeRoot.AppendChild(LazyMarketGroup(54, "Ore", treeRoot, connection))
+		treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
+
+		model = EveTypesModel(treeRoot)
+		treeView = QTreeView()
+		treeView.setModel(model)
+
+		splitter = QSplitter()
+		splitter.addWidget(treeView)
+		splitter.addWidget(self.view)
+
+		self.setCentralWidget(splitter)
 		self.setWindowTitle("EveGant")
 
 		self.createMenus()

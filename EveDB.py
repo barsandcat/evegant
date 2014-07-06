@@ -1,11 +1,9 @@
 
 import sqlite3
-
-
 import unittest
-from unittest.mock import (Mock, MagicMock)
+from unittest.mock import Mock, MagicMock
 
-from logging import (info, warning, error)
+from logging import info, warning, error
 
 class TestEveDB(unittest.TestCase):
 
