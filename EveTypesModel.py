@@ -27,6 +27,9 @@ class EveTypesModel(QAbstractItemModel):
 		if not index.isValid():
 			return None
 
+		if role == Qt.UserRole:
+			return index.internalPointer().GetOutputs()
+
 		if role != Qt.DisplayRole:
 			return None
 

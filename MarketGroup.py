@@ -28,6 +28,9 @@ class MarketGroup:
 	def GetParent(self):
 		return self.parent
 
+	def GetOutputs(self):
+		return []
+
 
 class LazyMarketGroup:
 	def __init__(self, aMarketGroupId, aName, aParent, aDBConnection):
@@ -83,3 +86,5 @@ class LazyMarketGroup:
 	def GetParent(self):
 		return self.parent
 
+	def GetOutputs(self):
+		return []

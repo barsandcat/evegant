@@ -23,6 +23,7 @@ from EveDB import LoadBlueprint, LoadRefine
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from MarketGroup import MarketGroup, LazyMarketGroup
+from ProcessesFilterModel import ProcessesFilterModel
 
 
 class MainWindow(QMainWindow):
@@ -45,9 +46,13 @@ class MainWindow(QMainWindow):
 		treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
 
 		model = EveTypesModel(treeRoot)
+		self.filterModel = ProcessesFilterModel()
+		self.filterModel.setSourceModel(model)
+		
 		treeView = QTreeView()
 		treeView.doubleClicked.connect(self.OnTreeDoubleClick)
 		treeView.setModel(model)
+
 
 		self.scene = QGraphicsScene()
 		self.view = QGraphicsView(self.scene)
