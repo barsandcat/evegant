@@ -14,6 +14,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 		QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy,
 		QToolBox, QToolButton, QWidget, QTreeView, QSplitter)
 
+from logging import warning, error, info
+
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
@@ -32,28 +34,9 @@ class MainWindow(QMainWindow):
 
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
+		self.productionLine = None
 
-		# Temp fill in
-		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038, None))
-
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224, None))
 		
-
-		#Graph view setup
-		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
-		ConstructProcessGraphicTree(graphics)
-
-		self.scene = QGraphicsScene()
-		FillScene(self.scene, graphics)			
-		self.view = QGraphicsView(self.scene)
-
 		#Tree view setup
 		treeRoot = MarketGroup("Type")
 
@@ -63,7 +46,11 @@ class MainWindow(QMainWindow):
 
 		model = EveTypesModel(treeRoot)
 		treeView = QTreeView()
+		treeView.doubleClicked.connect(self.OnTreeDoubleClick)
 		treeView.setModel(model)
+
+		self.scene = QGraphicsScene()
+		self.view = QGraphicsView(self.scene)
 
 		splitter = QSplitter()
 		splitter.addWidget(treeView)
@@ -75,6 +62,34 @@ class MainWindow(QMainWindow):
 		self.createMenus()
 		self.createToolbars()
 
+	def TempFillIn(self):
+		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028, None))
+		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038, None))
+
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227, None))
+		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224, None))
+
+
+	def	SetupGraphView(self):
+		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
+		ConstructProcessGraphicTree(graphics)
+
+		FillScene(self.scene, graphics)			
+		
+
+	def OnTreeDoubleClick(self, aIndex):
+		internalData = aIndex.internalPointer()
+		if internalData.GetChildCount() == 0:
+			if self.productionLine:
+				self.productionLine.AddProcess(internalData)
+			else:
+				self.productionLine = ProductionLine(internalData)
+			self.SetupGraphView()
 
 	def sceneScaleChanged(self, scale):
 		newScale = float(scale[:-1]) / 100.0
