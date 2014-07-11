@@ -25,7 +25,9 @@ class TestProcessesFilterModel(TestCase):
 
 	def test_filterGroup(self):
 		root = MarketGroup("Root")
-		root.AppendChild(MarketGroup("Group"))
+		group = MarketGroup("Group")
+		root.AppendChild(group)
+		group.AppendChild(BluePrint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
 
 		flt = ProcessesFilterModel()
@@ -44,9 +46,12 @@ class ProcessesFilterModel(QSortFilterProxyModel):
 			return True
 
 		index = self.sourceModel().index(sourceRow, 0, sourceParent)
+		data = self.sourceModel().data(index, Qt.UserRole)
 
-		rowOutputs = self.sourceModel().data(index, Qt.UserRole).GetOutputs()
-		for out in rowOutputs:
+		if data.GetChildCount() > 0:
+			return True
+
+		for out in data.GetOutputs():
 			if out in self.outputs:
 				return True
 
