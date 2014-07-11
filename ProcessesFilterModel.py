@@ -14,11 +14,21 @@ class TestProcessesFilterModel(TestCase):
 		flt = ProcessesFilterModel()
 		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
 
-	def test_filter(self):
+	def test_filterPass(self):
 		flt = ProcessesFilterModel()
 		root = MarketGroup("Root")
 		root.AppendChild(BluePrint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
+		flt.outputs = [0, 1, 2]
+		flt.setSourceModel(source)
+		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
+
+	def test_filterGroup(self):
+		root = MarketGroup("Root")
+		root.AppendChild(MarketGroup("Group"))
+		source = EveTypesModel(root)
+
+		flt = ProcessesFilterModel()
 		flt.outputs = [0, 1, 2]
 		flt.setSourceModel(source)
 		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
