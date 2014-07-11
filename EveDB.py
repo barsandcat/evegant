@@ -1,11 +1,11 @@
 
 import sqlite3
-import unittest
-from unittest.mock import Mock, MagicMock
 
+from unittest import TestCase
+from unittest.mock import Mock, MagicMock
 from logging import info, warning, error
 
-class TestEveDB(unittest.TestCase):
+class TestEveDB(TestCase):
 
 	def test_LoadBlueprint(self):
 		cursor = Mock()

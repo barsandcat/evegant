@@ -10,10 +10,10 @@ from PyQt5.QtGui import (QBrush, QColor, QFont, QIcon, QIntValidator, QPainter,
 from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QGraphicsPathItem, QGraphicsScene
 
 
-import unittest
+from unittest import TestCase
 from unittest.mock import Mock
 
-class TestProductionLineScene(unittest.TestCase):
+class TestProductionLineScene(TestCase):
 
 	def test_ConstructTree(self):
 		tookitMock = Mock()

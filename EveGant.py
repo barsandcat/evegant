@@ -95,6 +95,8 @@ class MainWindow(QMainWindow):
 				self.productionLine.AddProcess(data)
 			else:
 				self.productionLine = ProductionLine(data)
+			self.filterModel.outputs = self.productionLine.inputs
+			self.filterModel.invalidateFilter()
 			self.SetupGraphView()
 
 	def sceneScaleChanged(self, scale):

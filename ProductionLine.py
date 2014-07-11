@@ -3,10 +3,10 @@ from ProductionSchema import ProductionSchema
 from ProductionProcess import ProductionProcess
 
 
-import unittest
-import unittest.mock
+from unittest import TestCase
 
-class TestProductionLine(unittest.TestCase):
+
+class TestProductionLine(TestCase):
 
 	def test_AddProcess(self):
 		line = ProductionLine(ProductionSchema(1, [2], [1]))
@@ -50,5 +50,3 @@ class ProductionLine:
 		self.processes.append(ProductionProcess(aSchema))
 		self.Update()
 
-	def GetAviableSchemas():
-		return []
