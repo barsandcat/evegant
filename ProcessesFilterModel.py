@@ -11,7 +11,8 @@ class ProcessesFilterModel(QSortFilterProxyModel):
 			return True
 
 		index = self.sourceModel().index(sourceRow, 0, sourceParent)
-		rowOutputs = self.sourceModel().data(index, Qt.UserRole)
+		
+		rowOutputs = self.sourceModel().data(index, Qt.UserRole).GetOutputs()
 		for out in rowOutputs:
 			if out in self.outputs:
 				return True

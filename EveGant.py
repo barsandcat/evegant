@@ -49,16 +49,16 @@ class MainWindow(QMainWindow):
 		self.filterModel = ProcessesFilterModel()
 		self.filterModel.setSourceModel(model)
 		
-		treeView = QTreeView()
-		treeView.doubleClicked.connect(self.OnTreeDoubleClick)
-		treeView.setModel(model)
+		self.treeView = QTreeView()
+		self.treeView.doubleClicked.connect(self.OnTreeDoubleClick)
+		self.treeView.setModel(self.filterModel)
 
 
 		self.scene = QGraphicsScene()
 		self.view = QGraphicsView(self.scene)
 
 		splitter = QSplitter()
-		splitter.addWidget(treeView)
+		splitter.addWidget(self.treeView)
 		splitter.addWidget(self.view)
 
 		self.setCentralWidget(splitter)
@@ -88,12 +88,13 @@ class MainWindow(QMainWindow):
 		
 
 	def OnTreeDoubleClick(self, aIndex):
-		internalData = aIndex.internalPointer()
-		if internalData.GetChildCount() == 0:
+		data = self.treeView.model().data(aIndex, Qt.UserRole)
+
+		if data.GetChildCount() == 0:
 			if self.productionLine:
-				self.productionLine.AddProcess(internalData)
+				self.productionLine.AddProcess(data)
 			else:
-				self.productionLine = ProductionLine(internalData)
+				self.productionLine = ProductionLine(data)
 			self.SetupGraphView()
 
 	def sceneScaleChanged(self, scale):
