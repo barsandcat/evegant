@@ -49,30 +49,17 @@ class ProcessesFilterModel(QSortFilterProxyModel):
 		data = self.sourceModel().data(index, Qt.UserRole)
 
 		if data.GetChildCount() > 0:
-			return True
-
-		for out in data.GetOutputs():
-			if out in self.outputs:
-				return True
-
-		return False
-
-
-class EmptyGroupFilterModel(QSortFilterProxyModel):
-	def filterAcceptsRow(self, sourceRow, sourceParent):
-
-		index = self.sourceModel().index(sourceRow, 0, sourceParent)
-		data = self.sourceModel().data(index, Qt.UserRole)
-
-		if data.GetChildCount() == 0:
-			return True
-
-		rowCount = self.sourceModel().rowCount(index)
-		for i in range(rowCount):
-			if self.filterAcceptsRow(i, index):
-				return True
+			rowCount = self.sourceModel().rowCount(index)
+			for i in range(rowCount):
+				if self.filterAcceptsRow(i, index):
+					return True
+		else:
+			for out in data.GetOutputs():
+				if out in self.outputs:
+					return True
 
 		return False
+
 		
 
 		

@@ -23,7 +23,7 @@ from EveDB import LoadBlueprint, LoadRefine
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from MarketGroup import MarketGroup, LazyMarketGroup
-from ProcessesFilterModel import ProcessesFilterModel, EmptyGroupFilterModel
+from ProcessesFilterModel import ProcessesFilterModel
 
 
 class MainWindow(QMainWindow):
@@ -48,12 +48,10 @@ class MainWindow(QMainWindow):
 		model = EveTypesModel(treeRoot)
 		self.filterModel = ProcessesFilterModel()
 		self.filterModel.setSourceModel(model)
-		self.emptyGroupFilter = EmptyGroupFilterModel()
-		self.emptyGroupFilter.setSourceModel(self.filterModel)
 		
 		self.treeView = QTreeView()
 		self.treeView.doubleClicked.connect(self.OnTreeDoubleClick)
-		self.treeView.setModel(self.emptyGroupFilter)
+		self.treeView.setModel(self.filterModel)
 
 
 		self.scene = QGraphicsScene()
@@ -100,7 +98,6 @@ class MainWindow(QMainWindow):
 				self.productionLine = ProductionLine(data)
 			self.filterModel.outputs = self.productionLine.inputs
 			self.filterModel.invalidateFilter()
-			self.emptyGroupFilter.invalidateFilter()
 			self.SetupGraphView()
 
 	def sceneScaleChanged(self, scale):
