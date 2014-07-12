@@ -56,6 +56,7 @@ class MainWindow(QMainWindow):
 
 		self.scene = QGraphicsScene()
 		self.view = QGraphicsView(self.scene)
+		self.view.setMinimumWidth(500)
 
 		splitter = QSplitter()
 		splitter.addWidget(self.treeView)
