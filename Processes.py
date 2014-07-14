@@ -15,7 +15,7 @@ class TestEveDB(TestCase):
 		self.assertEqual(len(bp.GetOutputs()), 1)
 		self.assertEqual(len(bp.GetInputs()), 6)
 
-class BluePrint:
+class Blueprint:
 	def __init__(self, aId, aName, aGroup, aInputs, aOutput):
 		self.schemaId = aId
 		self.name = aName
@@ -106,5 +106,5 @@ def LoadBlueprint(aCursor, aBlueprintId, aGroup):
 		"AND bt.blueprintTypeID = t.typeID;", (aBlueprintId,))
 	row = aCursor.fetchone()
 
-	return BluePrint(row[0], row[2], aGroup, inputs, row[1])
+	return Blueprint(row[0], row[2], aGroup, inputs, row[1])
 	

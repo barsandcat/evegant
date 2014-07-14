@@ -1,5 +1,5 @@
 
-from Processes import BluePrint, LoadBlueprint, Refine, LoadRefine
+from Processes import Blueprint, LoadBlueprint, Refine, LoadRefine
 
 class MarketGroup:
 	def __init__(self, aName, aParent=None):

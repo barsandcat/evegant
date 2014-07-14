@@ -5,7 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from EveTypesModel import EveTypesModel
-from Processes import BluePrint
+from Processes import Blueprint
 from MarketGroup import MarketGroup
 
 class TestProcessesFilterModel(TestCase):
@@ -17,7 +17,7 @@ class TestProcessesFilterModel(TestCase):
 	def test_filterPass(self):
 		flt = ProcessesFilterModel()
 		root = MarketGroup("Root")
-		root.AppendChild(BluePrint(1, "Name", None, [], 1))
+		root.AppendChild(Blueprint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
 		flt.outputs = [0, 1, 2]
 		flt.setSourceModel(source)
@@ -27,7 +27,7 @@ class TestProcessesFilterModel(TestCase):
 		root = MarketGroup("Root")
 		group = MarketGroup("Group")
 		root.AppendChild(group)
-		group.AppendChild(BluePrint(1, "Name", None, [], 1))
+		group.AppendChild(Blueprint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
 
 		flt = ProcessesFilterModel()
