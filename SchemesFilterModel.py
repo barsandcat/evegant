@@ -5,17 +5,17 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from EveTypesModel import EveTypesModel
-from Processes import Blueprint
+from Schemes import Blueprint
 from MarketGroup import MarketGroup
 
-class TestProcessesFilterModel(TestCase):
+class TestSchemesFilterModel(TestCase):
 
 	def test_filterEmpty(self):
-		flt = ProcessesFilterModel()
+		flt = SchemesFilterModel()
 		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
 
 	def test_filterPass(self):
-		flt = ProcessesFilterModel()
+		flt = SchemesFilterModel()
 		root = MarketGroup("Root")
 		root.AppendChild(Blueprint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
@@ -30,13 +30,13 @@ class TestProcessesFilterModel(TestCase):
 		group.AppendChild(Blueprint(1, "Name", None, [], 1))
 		source = EveTypesModel(root)
 
-		flt = ProcessesFilterModel()
+		flt = SchemesFilterModel()
 		flt.outputs = [0, 1, 2]
 		flt.setSourceModel(source)
 		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
 
 
-class ProcessesFilterModel(QSortFilterProxyModel):
+class SchemesFilterModel(QSortFilterProxyModel):
 	def __init__(self):
 		super().__init__()
 		self.outputs = set()

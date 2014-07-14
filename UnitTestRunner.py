@@ -4,8 +4,8 @@ import unittest
 
 from ProductionLineScene import TestProductionLineScene
 from ProductionLine import TestProductionLine
-from Processes import TestEveDB
-from ProcessesFilterModel import TestProcessesFilterModel
+from Schemes import TestEveDB
+from SchemesFilterModel import TestSchemesFilterModel
 
 from PyQt5.QtWidgets import QApplication
 import sys
