@@ -19,10 +19,9 @@ from logging import warning, error, info
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
-from Schemes import LoadBlueprint, LoadRefine
+from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
-from MarketGroup import MarketGroup, LazyMarketGroup
 from SchemesFilterModel import SchemesFilterModel
 
 
@@ -39,12 +38,7 @@ class MainWindow(QMainWindow):
 
 		
 		#Tree view setup
-		treeRoot = MarketGroup("Type")
-
-		treeRoot.AppendChild(LazyMarketGroup(2, "Blueprints", treeRoot, connection))
-		treeRoot.AppendChild(LazyMarketGroup(54, "Ore", treeRoot, connection))
-		treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
-
+		treeRoot = CreateSchemesTree(connection)
 		model = EveTypesModel(treeRoot)
 		self.filterModel = SchemesFilterModel()
 		self.filterModel.setSourceModel(model)
