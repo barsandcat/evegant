@@ -18,9 +18,40 @@ class TestEveDB(TestCase):
 def CreateSchemesTree(connection):
 	treeRoot = MarketGroup("Type")
 
-	treeRoot.AppendChild(LazyMarketGroup(2, "Blueprints", treeRoot, connection))
-	treeRoot.AppendChild(LazyMarketGroup(54, "Ore", treeRoot, connection))
-	treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
+	cursor = connection.cursor()
+	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
+
+	marketGroups = {}
+	for row in cursor:
+		groupID = row[0]
+		parentID = row[1]
+		groupName = row[2]
+		marketGroups[groupID] = MarketGroup(groupName, parentID)
+	
+	for key, child in marketGroups.items():
+		parentID = child.GetParent()
+		if parentID:
+				parent = marketGroups[parentID]
+		else:
+				parent = treeRoot
+		child.SetParent(parent)
+		parent.AppendChild(child)
+		
+	cursor.execute("SELECT typeID, marketGroupID, blueprintTypeID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID ")
+
+	for row in cursor:
+		groupId = row[1]
+		if groupId and groupId in marketGroups:
+			group = marketGroups[groupId]
+			if row[2]:
+				child = LoadBlueprint(connection.cursor(), row[2], group)
+			else:
+				child = LoadRefine(connection.cursor(), row[0], group)
+			group.AppendChild(child)
+
+	#treeRoot.AppendChild(LazyMarketGroup(2, "Blueprints", treeRoot, connection))
+	#treeRoot.AppendChild(LazyMarketGroup(54, "Ore", treeRoot, connection))
+	#treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
 	return treeRoot
 
 
