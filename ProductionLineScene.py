@@ -1,5 +1,5 @@
 
-from ProductionSchema import ProductionSchema
+from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
 from ProductionProcess import ProductionProcess
 
@@ -20,9 +20,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(1, [2, 3], [4])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(2, [1], [2])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(2, [1], [3])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [2, 3], [4])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [1], [2])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [1], [3])), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -36,9 +36,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(1, [3, 4], [5])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(2, [2], [3])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(3, [1], [2, 4])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [3, 4], [5])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [2], [3])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(3, [1], [2, 4])), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -52,9 +52,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(1, [3, 4], [5])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(2, [2], [3])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionSchema(3, [1], [3, 4])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [3, 4], [5])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [2], [3])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(3, [1], [3, 4])), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -96,7 +96,7 @@ class ProcessGraphic(QGraphicsItem):
 		self.inputs = []
 		self.outputs = []
 
-		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.process.schema.schemaId, 32), self)
+		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.process.scheme.schemeId, 32), self)
 		
 		width = 160
 		space = 40
@@ -104,11 +104,11 @@ class ProcessGraphic(QGraphicsItem):
 		inputOffset = 0
 		outputOffset = 0
 
-		for inp in self.process.schema.GetInputs():
+		for inp in self.process.scheme.GetInputs():
 			inputOffset = inputOffset + space
 			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
 
-		for out in self.process.schema.GetOutputs():
+		for out in self.process.scheme.GetOutputs():
 			outputOffset = outputOffset + space
 			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
 
@@ -127,7 +127,7 @@ class ProcessGraphic(QGraphicsItem):
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.schema.GetName())
+		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())
 
 	def boundingRect(self):
 		return self.rect

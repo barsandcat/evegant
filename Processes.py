@@ -17,7 +17,7 @@ class TestEveDB(TestCase):
 
 class Blueprint:
 	def __init__(self, aId, aName, aGroup, aInputs, aOutput):
-		self.schemaId = aId
+		self.schemeId = aId
 		self.name = aName
 		self.inputs = aInputs
 		self.output = aOutput
@@ -47,7 +47,7 @@ class Blueprint:
 
 class Refine:
 	def __init__(self, aId, aName, aGroup, aInput, aOutputs):
-		self.schemaId = aId
+		self.schemeId = aId
 		self.name = aName
 		self.input = aInput
 		self.outputs = aOutputs

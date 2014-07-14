@@ -1,5 +1,5 @@
 
-from ProductionSchema import ProductionSchema
+from ProductionScheme import ProductionScheme
 from ProductionProcess import ProductionProcess
 
 
@@ -9,12 +9,12 @@ from unittest import TestCase
 class TestProductionLine(TestCase):
 
 	def test_AddProcess(self):
-		line = ProductionLine(ProductionSchema(1, [2], [1]))
+		line = ProductionLine(ProductionScheme(1, [2], [1]))
 		assert line.outputs[0] == 1
 		assert len(line.outputs) == 1
 		assert line.inputs[0] == 2
 		assert len(line.inputs) == 1
-		line.AddProcess(ProductionSchema(2, [3], [2]))
+		line.AddProcess(ProductionScheme(2, [3], [2]))
 		assert line.outputs[0] == 1
 		assert len(line.outputs) == 1
 		assert line.inputs[0] == 3
@@ -22,8 +22,8 @@ class TestProductionLine(TestCase):
 
 
 class ProductionLine:
-	def __init__(self, rootProcessSchema):
-		self.rootProcess = ProductionProcess(rootProcessSchema)
+	def __init__(self, rootProcessScheme):
+		self.rootProcess = ProductionProcess(rootProcessScheme)
 		self.processes = []
 		self.processes.append(self.rootProcess)
 		self.Update()
@@ -34,9 +34,9 @@ class ProductionLine:
 
 		items = {}
 		for process in self.processes:
-			for inp in process.schema.GetInputs():
+			for inp in process.scheme.GetInputs():
 				items[inp] = items.get(inp, 0) - 1
-			for out in process.schema.GetOutputs():
+			for out in process.scheme.GetOutputs():
 				items[out] = items.get(out, 0) + 1
 
 		for item, count in items.items():
@@ -46,7 +46,7 @@ class ProductionLine:
 				self.inputs.append(item)
 
 
-	def AddProcess(self, aSchema):
-		self.processes.append(ProductionProcess(aSchema))
+	def AddProcess(self, aScheme):
+		self.processes.append(ProductionProcess(aScheme))
 		self.Update()
 
