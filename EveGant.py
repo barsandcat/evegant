@@ -68,19 +68,6 @@ class MainWindow(QMainWindow):
 		self.createMenus()
 		self.createToolbars()
 
-	def TempFillIn(self):
-		self.productionLine = ProductionLine(LoadBlueprint(connection.cursor(), 20188, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21010, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21018, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21028, None))
-		self.productionLine.AddProcess(LoadBlueprint(connection.cursor(), 21038, None))
-
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1228, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 18, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1227, None))
-		self.productionLine.AddProcess(LoadRefine(connection.cursor(), 1224, None))
-
-
 	def	SetupGraphView(self):
 		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
 		ConstructProcessGraphicTree(graphics)
