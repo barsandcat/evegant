@@ -19,7 +19,7 @@ from logging import warning, error, info
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionSchema import ProductionSchema
 from ProductionLine import ProductionLine
-from EveDB import LoadBlueprint, LoadRefine
+from Processes import LoadBlueprint, LoadRefine
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from MarketGroup import MarketGroup, LazyMarketGroup

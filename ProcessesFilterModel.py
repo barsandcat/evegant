@@ -5,7 +5,7 @@ from unittest import TestCase
 from unittest.mock import Mock
 
 from EveTypesModel import EveTypesModel
-from EveDB import BluePrint
+from Processes import BluePrint
 from MarketGroup import MarketGroup
 
 class TestProcessesFilterModel(TestCase):

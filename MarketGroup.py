@@ -1,5 +1,5 @@
 
-from EveDB import BluePrint, LoadBlueprint, Refine, LoadRefine
+from Processes import BluePrint, LoadBlueprint, Refine, LoadRefine
 
 class MarketGroup:
 	def __init__(self, aName, aParent=None):
