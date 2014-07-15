@@ -19,7 +19,7 @@ from logging import warning, error, info
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
-from Schemes import CreateSchemesTree
+from Schemes import CreateSchemesTree, CreateSchemesTree2
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from SchemesFilterModel import SchemesFilterModel
@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
 
 		
 		#Tree view setup
-		treeRoot = CreateSchemesTree(connection)
+		treeRoot = CreateSchemesTree2(connection)
 		model = EveTypesModel(treeRoot)
 		self.filterModel = SchemesFilterModel()
 		self.filterModel.setSourceModel(model)

@@ -50,6 +50,45 @@ def CreateSchemesTree(connection):
 
 	return treeRoot
 
+def CreateSchemesTree2(connection):
+	treeRoot = MarketGroup("Type")
+	cursor = connection.cursor()
+
+	cursor.execute("SELECT categoryID, categoryName FROM invCategories")
+	categories = {}
+	for row in cursor:
+		categoryId = row[0]
+		categoryName = row[1]
+		category = MarketGroup(categoryName, treeRoot)
+		treeRoot.AppendChild(category)
+		categories[categoryId] = category
+
+	cursor.execute("SELECT groupID, categoryID, groupName FROM invGroups")
+	groups = {}
+	for row in cursor:
+		groupId = row[0]
+		categoryId = row[1]
+		groupName = row[2]
+		category = categories[categoryId]
+		group = MarketGroup(groupName, category)
+		category.AppendChild(group)
+		groups[groupId] = group
+				
+	cursor.execute("SELECT typeID, blueprintTypeID, groupID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID")
+
+	for row in cursor:
+		groupId = row[2]
+		if groupId and groupId in groups:
+			group = groups[groupId]
+			if row[1]:
+				child = LoadBlueprint(connection.cursor(), row[1], group)
+			else:
+				child = LoadRefine(connection.cursor(), row[0], group)
+			group.AppendChild(child)
+
+
+	return treeRoot
+
 
 class Blueprint:
 	def __init__(self, aId, aName, aGroup, aInputs, aOutput):
