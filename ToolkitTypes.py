@@ -4,7 +4,7 @@ from PyQt5.QtGui import QPixmap
 
 class ToolkitTypes:
 	def __init__(self):
-		self.archive = zipfile.ZipFile('Eve toolkit/Rubicon_1.3_Types.zip')
+		self.archive = zipfile.ZipFile('Eve toolkit/Kronos_Types.zip')
 
 	def Close(self):
 		self.archive.close()

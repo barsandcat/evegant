@@ -17,10 +17,8 @@ class TestEveDB(TestCase):
 		
 def CreateSchemesTree(connection):
 	treeRoot = MarketGroup("Type")
-
 	cursor = connection.cursor()
 	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
-
 	marketGroups = {}
 	for row in cursor:
 		groupID = row[0]
@@ -31,27 +29,63 @@ def CreateSchemesTree(connection):
 	for key, child in marketGroups.items():
 		parentID = child.GetParent()
 		if parentID:
-				parent = marketGroups[parentID]
+			parent = marketGroups[parentID]
 		else:
-				parent = treeRoot
+			parent = treeRoot
 		child.SetParent(parent)
 		parent.AppendChild(child)
 		
-	cursor.execute("SELECT typeID, marketGroupID, blueprintTypeID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID ")
+	cursor.execute("SELECT typeID, blueprintTypeID, marketGroupID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID")
 
 	for row in cursor:
-		groupId = row[1]
+		groupId = row[2]
 		if groupId and groupId in marketGroups:
 			group = marketGroups[groupId]
-			if row[2]:
-				child = LoadBlueprint(connection.cursor(), row[2], group)
+			if row[1]:
+				child = LoadBlueprint(connection.cursor(), row[1], group)
 			else:
 				child = LoadRefine(connection.cursor(), row[0], group)
 			group.AppendChild(child)
 
-	#treeRoot.AppendChild(LazyMarketGroup(2, "Blueprints", treeRoot, connection))
-	#treeRoot.AppendChild(LazyMarketGroup(54, "Ore", treeRoot, connection))
-	#treeRoot.AppendChild(LazyMarketGroup(493, "Ice Ore", treeRoot, connection))
+
+	return treeRoot
+
+def CreateSchemesTree2(connection):
+	treeRoot = MarketGroup("Type")
+	cursor = connection.cursor()
+
+	cursor.execute("SELECT categoryID, categoryName FROM invCategories")
+	categories = {}
+	for row in cursor:
+		categoryId = row[0]
+		categoryName = row[1]
+		category = MarketGroup(categoryName, treeRoot)
+		treeRoot.AppendChild(category)
+		categories[categoryId] = category
+
+	cursor.execute("SELECT groupID, categoryID, groupName FROM invGroups")
+	groups = {}
+	for row in cursor:
+		groupId = row[0]
+		categoryId = row[1]
+		groupName = row[2]
+		category = categories[categoryId]
+		group = MarketGroup(groupName, category)
+		category.AppendChild(group)
+		groups[groupId] = group
+				
+	cursor.execute("SELECT typeID, blueprintTypeID, groupID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID")
+
+	for row in cursor:
+		groupId = row[2]
+		if groupId and groupId in groups:
+			group = groups[groupId]
+			if row[1]:
+				child = LoadBlueprint(connection.cursor(), row[1], group)
+			else:
+				child = LoadRefine(connection.cursor(), row[0], group)
+			group.AppendChild(child)
+
 	return treeRoot
 
 
@@ -178,61 +212,3 @@ class MarketGroup:
 	def GetOutputs(self):
 		return []
 
-
-class LazyMarketGroup:
-	def __init__(self, aMarketGroupId, aName, aParent, aDBConnection):
-		self.parent = aParent
-		self.name = aName
-		self.children = None
-		self.marketGroupId = aMarketGroupId
-		self.db = aDBConnection
-
-	def CacheChildren(self):
-		if self.children == None:
-			self.children = []
-			cursor = self.db.cursor()
-			#Load child market groups
-			cursor.execute("SELECT marketGroupID, marketGroupName "
-				"FROM invMarketGroups WHERE parentGroupID = ?", 
-				(self.marketGroupId,))			
-			
-			for row in cursor:
-				marketGroupId = row[0]
-				name = row[1]
-				self.children.append(LazyMarketGroup(marketGroupId, name, self, self.db))
-
-			#Load child types, if it is blueprint - should have not null blueprintID
-			cursor.execute("SELECT typeID, blueprintTypeID "
-				"FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID "
-				"WHERE marketGroupID = ?", (self.marketGroupId,))
-
-			for row in cursor:
-				if row[1]:
-					blueprint = LoadBlueprint(self.db.cursor(), row[1], self)
-					self.children.append(blueprint)
-				else:
-					refine = LoadRefine(self.db.cursor(), row[0], self)
-					self.children.append(refine)
-
-
-	def GetChild(self, row):
-		self.CacheChildren()
-		return self.children[row]
-
-	def GetChildCount(self):
-		self.CacheChildren()
-		return len(self.children)
-
-	def GetIndexOfChild(self, aChild):
-		self.CacheChildren()
-		return self.children.index(aChild)
-
-	def GetName(self):
-		return self.name
-
-	def GetParent(self):
-		return self.parent
-
-	def GetOutputs(self):
-		return []
-	
