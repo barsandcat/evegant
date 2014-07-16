@@ -19,7 +19,7 @@ from logging import warning, error, info
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
-from Schemes import CreateSchemesTree, CreateSchemesTree2
+from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from SchemesFilterModel import SchemesFilterModel
