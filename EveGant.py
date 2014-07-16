@@ -38,7 +38,7 @@ class MainWindow(QMainWindow):
 
 		
 		#Tree view setup
-		treeRoot = CreateSchemesTree2(connection)
+		treeRoot = CreateSchemesTree(connection)
 		model = EveTypesModel(treeRoot)
 		self.filterModel = SchemesFilterModel()
 		self.filterModel.setSourceModel(model)
