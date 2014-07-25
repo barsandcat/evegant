@@ -45,9 +45,9 @@ class TestEveDB(TestCase):
 		self.assertEqual(bp.GetInputs(), [38])
 
 		
-def CreateSchemesTree(connection):
+def CreateSchemesTree(aConnection, aBlueprints):
 	treeRoot = MarketGroup("Type")
-	cursor = connection.cursor()
+	cursor = aConnection.cursor()
 	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
 	marketGroups = {}
 	for row in cursor:
@@ -65,18 +65,20 @@ def CreateSchemesTree(connection):
 		child.SetParent(parent)
 		parent.AppendChild(child)
 		
-	cursor.execute("SELECT t.typeID, c.categoryID, t.marketGroupID FROM invTypes t, invGroups g, invCategories c WHERE t.groupID = g.groupID AND g.categoryID = c.categoryID ORDER BY t.typeID")
+	cursor.execute("SELECT t.typeID, c.categoryID, t.marketGroupID, t.typeName FROM invTypes t, invGroups g, invCategories c WHERE t.groupID = g.groupID AND g.categoryID = c.categoryID ORDER BY t.typeID")
 
 	for row in cursor:
 		groupId = row[2]
 		if groupId and groupId in marketGroups:
 			group = marketGroups[groupId]
 			categoryId = row[1]
+			name = row[3]
+			typeId = row[0]
 			if categoryId == 9:
-				child = LoadBlueprint(connection.cursor(), row[0], group)
+				child = YamlToBlueprint(aBlueprints[typeId], name, group)
 				group.AppendChild(child)
 			if categoryId == 25:
-				child = LoadRefine(connection.cursor(), row[0], group)
+				child = LoadRefine(aConnection.cursor(), typeId, group)
 				group.AppendChild(child)
 			
 

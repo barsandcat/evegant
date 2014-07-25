@@ -23,6 +23,7 @@ from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from SchemesFilterModel import SchemesFilterModel
+from ToolkitBlueprints import LoadBlueprints
 
 
 class MainWindow(QMainWindow):
@@ -35,10 +36,11 @@ class MainWindow(QMainWindow):
 		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
 		connection = sqlite3.connect(dbFileName)
 		self.productionLine = None
+		blueprints = LoadBlueprints()
 
 		
 		#Tree view setup
-		treeRoot = CreateSchemesTree(connection)
+		treeRoot = CreateSchemesTree(connection, blueprints)
 		model = EveTypesModel(treeRoot)
 		self.filterModel = SchemesFilterModel()
 		self.filterModel.setSourceModel(model)

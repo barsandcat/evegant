@@ -1,6 +1,6 @@
 
 import yaml
 
-def LoadBlueprints(self):
+def LoadBlueprints():
 	file = open('Eve toolkit/blueprints.yaml')
 	return yaml.load(file)
