@@ -16,7 +16,7 @@ class TestEveDB(TestCase):
 		self.assertEqual(len(bp.GetOutputs()), 1)
 		self.assertEqual(len(bp.GetInputs()), 6)
 
-	def test_LoadBlueprint2(self):
+	def test_YamlToBlueprint(self):
 		blueprints = yaml.load(
 '''
 681:
@@ -40,7 +40,7 @@ class TestEveDB(TestCase):
 		)
 		
 		
-		bp = LoadBlueprint2(blueprints, 681, None)
+		bp = YamlToBlueprint(blueprints[681], "", None)
 		self.assertEqual(bp.GetOutputs(), [165])
 		self.assertEqual(bp.GetInputs(), [38])
 
@@ -176,13 +176,12 @@ def LoadBlueprint(aCursor, aBlueprintId, aGroup):
 
 	return Blueprint(row[0], row[2], aGroup, inputs, row[1])
 	
-def LoadBlueprint2(aBlueprints, aBlueprintId, aGroup):
-	blueprint = aBlueprints[aBlueprintId]
-	name = str(aBlueprintId)
-	manufacturing = blueprint["activities"][1]
+def YamlToBlueprint(aBlueprint, aName, aGroup):
+	manufacturing = aBlueprint["activities"][1]
+	blueprintId = aBlueprint["blueprintTypeID"]
 	inputs = list(manufacturing["materials"].keys())
 	output = list(manufacturing["products"].keys())[0]
-	return Blueprint(aBlueprintId, name, aGroup, inputs, output)
+	return Blueprint(blueprintId, aName, aGroup, inputs, output)
 
 	
 class MarketGroup:
