@@ -1,7 +1,6 @@
 
 import yaml
 
-class ToolkitBlueprints:
-	def __init__(self):
-		file = open('Eve toolkit/blueprints.yaml')
-		self.blueprints = yaml.load(file)
+def LoadBlueprints(self):
+	file = open('Eve toolkit/blueprints.yaml')
+	return yaml.load(file)

@@ -1,5 +1,6 @@
 
 import sqlite3
+import yaml
 
 from unittest import TestCase
 from unittest.mock import Mock, MagicMock
@@ -14,6 +15,35 @@ class TestEveDB(TestCase):
 		bp = LoadBlueprint(cursor, 939, None)
 		self.assertEqual(len(bp.GetOutputs()), 1)
 		self.assertEqual(len(bp.GetInputs()), 6)
+
+	def test_LoadBlueprint2(self):
+		blueprints = yaml.load(
+'''
+681:
+  activities:
+    1:
+      materials:
+        38:
+          quantity: 86
+      products:
+        165:
+          quantity: 1
+      time: 600
+    3:
+      time: 210
+    4:
+      time: 210
+    5:
+      time: 480
+  blueprintTypeID: 681
+  maxProductionLimit: 300'''
+		)
+		
+		
+		bp = LoadBlueprint2(blueprints, 681, None)
+		self.assertEqual(bp.GetOutputs(), [165])
+		self.assertEqual(bp.GetInputs(), [38])
+
 		
 def CreateSchemesTree(connection):
 	treeRoot = MarketGroup("Type")
@@ -145,6 +175,15 @@ def LoadBlueprint(aCursor, aBlueprintId, aGroup):
 	row = aCursor.fetchone()
 
 	return Blueprint(row[0], row[2], aGroup, inputs, row[1])
+	
+def LoadBlueprint2(aBlueprints, aBlueprintId, aGroup):
+	blueprint = aBlueprints[aBlueprintId]
+	name = str(aBlueprintId)
+	manufacturing = blueprint["activities"][1]
+	inputs = list(manufacturing["materials"].keys())
+	output = list(manufacturing["products"].keys())[0]
+	return Blueprint(aBlueprintId, name, aGroup, inputs, output)
+
 	
 class MarketGroup:
 	def __init__(self, aName, aParent=None):
