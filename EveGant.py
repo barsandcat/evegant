@@ -33,7 +33,7 @@ class MainWindow(QMainWindow):
 
 		self.toolkitTypes = ToolkitTypes()
 
-		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
+		dbFileName = "Eve toolkit/DATADUMP201407101530.db"
 		connection = sqlite3.connect(dbFileName)
 		self.productionLine = None
 		blueprints = LoadBlueprints()
