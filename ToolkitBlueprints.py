@@ -1,7 +1,9 @@
 import os
 import pickle
-
 import yaml
+from yaml import CLoader as Loader
+
+from logging import warning, error, info
 
 cacheFileName = 'blueprints.cache'
 
@@ -13,7 +15,7 @@ def LoadBlueprints():
 		cache.close()
 	else:
 		file = open('Eve toolkit/blueprints.yaml')
-		blueprints = yaml.load(file)
+		blueprints = yaml.load(file, Loader=Loader)
 		file.close()
 		
 		cache = open(cacheFileName, 'wb')
