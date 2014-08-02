@@ -75,7 +75,7 @@ class MainWindow(QMainWindow):
 				self.productionLine.AddProcess(data)
 			else:
 				self.productionLine = ProductionLine(data)
-			self.filterModel.outputs = self.productionLine.inputs
+			self.filterModel.outputs = [itemStack.itemId for itemStack in self.productionLine.inputs]
 			self.filterModel.invalidateFilter()
 			self.SetupGraphView()
 

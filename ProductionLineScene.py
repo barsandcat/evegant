@@ -106,11 +106,11 @@ class ProcessGraphic(QGraphicsItem):
 
 		for inp in self.process.scheme.GetInputs():
 			inputOffset = inputOffset + space
-			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
+			self.inputs.append(ItemStackGraphic(inp.itemId, self, QPointF(0, inputOffset), aToolkitTypes))
 
 		for out in self.process.scheme.GetOutputs():
 			outputOffset = outputOffset + space
-			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
+			self.outputs.append(ItemStackGraphic(out.itemId, self, QPointF(width, outputOffset), aToolkitTypes))
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 

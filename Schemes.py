@@ -6,6 +6,8 @@ from unittest import TestCase
 from unittest.mock import Mock, MagicMock
 from logging import info, warning, error
 
+from ItemStack import ItemStack
+
 class TestEveDB(TestCase):
 
 	def test_YamlToBlueprint(self):
@@ -33,8 +35,8 @@ class TestEveDB(TestCase):
 		
 		
 		bp = YamlToBlueprint(blueprints[681], "", None)
-		self.assertEqual(bp.GetOutputs(), [165])
-		self.assertEqual(bp.GetInputs(), [38])
+		self.assertEqual(bp.GetOutputs()[0].itemId, 165)
+		self.assertEqual(bp.GetInputs()[0].itemId, 38)
 
 		
 def CreateSchemesTree(aConnection, aBlueprints):
@@ -143,21 +145,27 @@ def LoadRefine(aCursor, aTypeId, aGroup):
 		"WHERE typeID = ? ",	(aTypeId,))
 	rows = aCursor.fetchall()
 
-	outputs = [row[0] for row in rows]
+	outputs = [ItemStack(row[0], row[1]) for row in rows]
 
 	aCursor.execute("SELECT typeName "
 		"FROM invTypes t "
 		"WHERE typeID = ? ", (aTypeId,))
 	row = aCursor.fetchone()
 
-	return Refine(aTypeId, row[0], aGroup, aTypeId, outputs)
+	return Refine(aTypeId, row[0], aGroup, ItemStack(aTypeId, 100), outputs)
 	
 def YamlToBlueprint(aBlueprint, aName, aGroup):
 	manufacturing = aBlueprint["activities"][1]
 	blueprintId = aBlueprint["blueprintTypeID"]
-	inputs = list(manufacturing["materials"].keys())
-	output = list(manufacturing["products"].keys())[0]
-	return Blueprint(blueprintId, aName, aGroup, inputs, output)
+	inputs = []
+	for id, params in manufacturing["materials"].items():
+		inputs.append(ItemStack(id, params["quantity"]))
+		
+	outputs = []
+	for id, params in manufacturing["products"].items():
+		outputs.append(ItemStack(id, params["quantity"]))		
+	
+	return Blueprint(blueprintId, aName, aGroup, inputs, outputs[0])
 
 	
 class MarketGroup:

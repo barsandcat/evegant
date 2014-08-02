@@ -67,7 +67,7 @@ class SchemesFilterModel(QSortFilterProxyModel):
 					return True
 		else:
 			for out in data.GetOutputs():
-				if not self.outputs or out in self.outputs:
+				if not self.outputs or out.itemId in self.outputs:
 					return True
 
 		return False
