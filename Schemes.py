@@ -1,5 +1,6 @@
 
 import sqlite3
+import yaml
 
 from unittest import TestCase
 from unittest.mock import Mock, MagicMock
@@ -7,17 +8,38 @@ from logging import info, warning, error
 
 class TestEveDB(TestCase):
 
-	def test_LoadBlueprint(self):
-		cursor = Mock()
-		cursor.fetchall = Mock(return_value = [(34, 2730), (35, 214), (36, 303), (37, 4), (38, 2), (39, 2)])
-		cursor.fetchone = Mock(return_value = (939, 592, 'Navitas Blueprint'))
-		bp = LoadBlueprint(cursor, 939, None)
-		self.assertEqual(len(bp.GetOutputs()), 1)
-		self.assertEqual(len(bp.GetInputs()), 6)
+	def test_YamlToBlueprint(self):
+		blueprints = yaml.load(
+'''
+681:
+  activities:
+    1:
+      materials:
+        38:
+          quantity: 86
+      products:
+        165:
+          quantity: 1
+      time: 600
+    3:
+      time: 210
+    4:
+      time: 210
+    5:
+      time: 480
+  blueprintTypeID: 681
+  maxProductionLimit: 300'''
+		)
 		
-def CreateSchemesTree(connection):
+		
+		bp = YamlToBlueprint(blueprints[681], "", None)
+		self.assertEqual(bp.GetOutputs(), [165])
+		self.assertEqual(bp.GetInputs(), [38])
+
+		
+def CreateSchemesTree(aConnection, aBlueprints):
 	treeRoot = MarketGroup("Type")
-	cursor = connection.cursor()
+	cursor = aConnection.cursor()
 	cursor.execute("SELECT marketGroupID, parentGroupID, marketGroupName FROM invMarketGroups")
 	marketGroups = {}
 	for row in cursor:
@@ -35,59 +57,25 @@ def CreateSchemesTree(connection):
 		child.SetParent(parent)
 		parent.AppendChild(child)
 		
-	cursor.execute("SELECT typeID, blueprintTypeID, marketGroupID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID")
+	cursor.execute("SELECT t.typeID, c.categoryID, t.marketGroupID, t.typeName FROM invTypes t, invGroups g, invCategories c WHERE t.groupID = g.groupID AND g.categoryID = c.categoryID ORDER BY t.typeID")
 
 	for row in cursor:
 		groupId = row[2]
 		if groupId and groupId in marketGroups:
 			group = marketGroups[groupId]
-			if row[1]:
-				child = LoadBlueprint(connection.cursor(), row[1], group)
-			else:
-				child = LoadRefine(connection.cursor(), row[0], group)
-			group.AppendChild(child)
+			categoryId = row[1]
+			name = row[3]
+			typeId = row[0]
+			if categoryId == 9:
+				child = YamlToBlueprint(aBlueprints[typeId], name, group)
+				group.AppendChild(child)
+			if categoryId == 25:
+				child = LoadRefine(aConnection.cursor(), typeId, group)
+				group.AppendChild(child)
+			
 
 
 	return treeRoot
-
-def CreateSchemesTree2(connection):
-	treeRoot = MarketGroup("Type")
-	cursor = connection.cursor()
-
-	cursor.execute("SELECT categoryID, categoryName FROM invCategories")
-	categories = {}
-	for row in cursor:
-		categoryId = row[0]
-		categoryName = row[1]
-		category = MarketGroup(categoryName, treeRoot)
-		treeRoot.AppendChild(category)
-		categories[categoryId] = category
-
-	cursor.execute("SELECT groupID, categoryID, groupName FROM invGroups")
-	groups = {}
-	for row in cursor:
-		groupId = row[0]
-		categoryId = row[1]
-		groupName = row[2]
-		category = categories[categoryId]
-		group = MarketGroup(groupName, category)
-		category.AppendChild(group)
-		groups[groupId] = group
-				
-	cursor.execute("SELECT typeID, blueprintTypeID, groupID FROM invTypes LEFT JOIN invBlueprintTypes ON typeID = blueprintTypeID")
-
-	for row in cursor:
-		groupId = row[2]
-		if groupId and groupId in groups:
-			group = groups[groupId]
-			if row[1]:
-				child = LoadBlueprint(connection.cursor(), row[1], group)
-			else:
-				child = LoadRefine(connection.cursor(), row[0], group)
-			group.AppendChild(child)
-
-	return treeRoot
-
 
 class Blueprint:
 	def __init__(self, aId, aName, aGroup, aInputs, aOutput):
@@ -163,24 +151,14 @@ def LoadRefine(aCursor, aTypeId, aGroup):
 	row = aCursor.fetchone()
 
 	return Refine(aTypeId, row[0], aGroup, aTypeId, outputs)
-
-
-def LoadBlueprint(aCursor, aBlueprintId, aGroup):
 	
-	aCursor.execute("SELECT tm.materialTypeID, quantity "
-		"FROM invTypeMaterials tm, invBlueprintTypes bt "
-		"WHERE tm.typeID = bt.productTypeID "
-		"AND bt.blueprintTypeID = ?", (aBlueprintId,))
-	rows = aCursor.fetchall()
+def YamlToBlueprint(aBlueprint, aName, aGroup):
+	manufacturing = aBlueprint["activities"][1]
+	blueprintId = aBlueprint["blueprintTypeID"]
+	inputs = list(manufacturing["materials"].keys())
+	output = list(manufacturing["products"].keys())[0]
+	return Blueprint(blueprintId, aName, aGroup, inputs, output)
 
-	inputs = [row[0] for row in rows]
-	aCursor.execute("SELECT blueprintTypeID, productTypeID, typeName "
-		"FROM invBlueprintTypes bt, invTypes t "
-		"WHERE blueprintTypeID = ? "
-		"AND bt.blueprintTypeID = t.typeID;", (aBlueprintId,))
-	row = aCursor.fetchone()
-
-	return Blueprint(row[0], row[2], aGroup, inputs, row[1])
 	
 class MarketGroup:
 	def __init__(self, aName, aParent=None):

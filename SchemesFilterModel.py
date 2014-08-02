@@ -11,7 +11,23 @@ class TestSchemesFilterModel(TestCase):
 
 	def test_filterEmpty(self):
 		flt = SchemesFilterModel()
+		root = MarketGroup("Root")
+		root.AppendChild(Blueprint(1, "Name", None, [], 1))
+		source = EveTypesModel(root)
+		flt.outputs = []
+		flt.setSourceModel(source)
 		self.assertTrue(flt.filterAcceptsRow(0, QModelIndex()))
+		
+	def test_filterEmptyGroup(self):
+		root = MarketGroup("Root")
+		group = MarketGroup("Group")
+		root.AppendChild(group)
+		source = EveTypesModel(root)
+
+		flt = SchemesFilterModel()
+		flt.outputs = []
+		flt.setSourceModel(source)
+		self.assertFalse(flt.filterAcceptsRow(0, QModelIndex()))
 
 	def test_filterPass(self):
 		flt = SchemesFilterModel()
@@ -41,9 +57,6 @@ class SchemesFilterModel(QSortFilterProxyModel):
 		self.outputs = set()
 
 	def filterAcceptsRow(self, sourceRow, sourceParent):
-		if not self.outputs:
-			return True
-
 		index = self.sourceModel().index(sourceRow, 0, sourceParent)
 		data = self.sourceModel().data(index, Qt.UserRole)
 
@@ -54,7 +67,7 @@ class SchemesFilterModel(QSortFilterProxyModel):
 					return True
 		else:
 			for out in data.GetOutputs():
-				if out in self.outputs:
+				if not self.outputs or out in self.outputs:
 					return True
 
 		return False

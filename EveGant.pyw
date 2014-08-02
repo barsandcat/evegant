@@ -12,33 +12,31 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 		QFontComboBox, QGraphicsItem, QGraphicsLineItem, QGraphicsPolygonItem,
 		QGraphicsScene, QGraphicsTextItem, QGraphicsView, QGridLayout,
 		QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy,
-		QToolBox, QToolButton, QWidget, QTreeView, QSplitter)
+		QToolBox, QToolButton, QWidget, QTreeView, QSplitter, QSplashScreen)
 
 from logging import warning, error, info
 
 from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
 from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
-from Schemes import CreateSchemesTree, CreateSchemesTree2
+from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
 from SchemesFilterModel import SchemesFilterModel
+from ToolkitBlueprints import LoadBlueprints
 
 
 class MainWindow(QMainWindow):
  
-	def __init__(self):
-		super(MainWindow, self).__init__()
+	def __init__(self, connection, blueprints, toolkitTypes):
+		super().__init__()
 
-		self.toolkitTypes = ToolkitTypes()
-
-		dbFileName = "Eve toolkit/DATADUMP201403101147.db"
-		connection = sqlite3.connect(dbFileName)
+		self.toolkitTypes = toolkitTypes
 		self.productionLine = None
 
 		
 		#Tree view setup
-		treeRoot = CreateSchemesTree2(connection)
+		treeRoot = CreateSchemesTree(connection, blueprints)
 		model = EveTypesModel(treeRoot)
 		self.filterModel = SchemesFilterModel()
 		self.filterModel.setSourceModel(model)
@@ -118,11 +116,30 @@ class MainWindow(QMainWindow):
 if __name__ == '__main__':
 
 	import sys
-
+	
 	app = QApplication(sys.argv)
+	
+	splash = QSplashScreen(QPixmap("Splash.jpg"))
+	splash.show()
+	app.processEvents()
+	
+	
+	splash.showMessage("Loading icons")
+	app.processEvents()
+	toolkitTypes = ToolkitTypes()
+	
+	splash.showMessage("Loading data base")
+	app.processEvents()
+	dbFileName = "Eve toolkit/DATADUMP201407101530.db"
+	connection = sqlite3.connect(dbFileName)
+	
+	splash.showMessage("Loading blueprints")
+	app.processEvents()
+	blueprints = LoadBlueprints()
 
-	mainWindow = MainWindow()
+	mainWindow = MainWindow(connection, blueprints, toolkitTypes)
 	mainWindow.setGeometry(100, 100, 800, 500)
 	mainWindow.show()
+	splash.finish(mainWindow)
 
 	sys.exit(app.exec_())
