@@ -3,7 +3,6 @@
 import unittest
 
 from ProductionLineScene import TestProductionLineScene
-from ProductionLine import TestProductionLine
 from Schemes import TestEveDB
 from SchemesFilterModel import TestSchemesFilterModel
 

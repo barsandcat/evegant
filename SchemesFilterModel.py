@@ -6,13 +6,14 @@ from unittest.mock import Mock
 
 from EveTypesModel import EveTypesModel
 from Schemes import Blueprint, MarketGroup
+from ItemStack import ItemStack
 
 class TestSchemesFilterModel(TestCase):
 
 	def test_filterEmpty(self):
 		flt = SchemesFilterModel()
 		root = MarketGroup("Root")
-		root.AppendChild(Blueprint(1, "Name", None, [], 1))
+		root.AppendChild(Blueprint(1, "Name", None, [], ItemStack(1, 1)))
 		source = EveTypesModel(root)
 		flt.outputs = []
 		flt.setSourceModel(source)
@@ -32,7 +33,7 @@ class TestSchemesFilterModel(TestCase):
 	def test_filterPass(self):
 		flt = SchemesFilterModel()
 		root = MarketGroup("Root")
-		root.AppendChild(Blueprint(1, "Name", None, [], 1))
+		root.AppendChild(Blueprint(1, "Name", None, [], ItemStack(1, 1)))
 		source = EveTypesModel(root)
 		flt.outputs = [0, 1, 2]
 		flt.setSourceModel(source)
@@ -42,7 +43,7 @@ class TestSchemesFilterModel(TestCase):
 		root = MarketGroup("Root")
 		group = MarketGroup("Group")
 		root.AppendChild(group)
-		group.AppendChild(Blueprint(1, "Name", None, [], 1))
+		group.AppendChild(Blueprint(1, "Name", None, [], ItemStack(1, 1)))
 		source = EveTypesModel(root)
 
 		flt = SchemesFilterModel()

@@ -1,7 +1,8 @@
 
-from ProductionScheme import ProductionScheme
 from ProductionLine import ProductionLine
 from ProductionProcess import ProductionProcess
+from Schemes import Blueprint, Refine
+from ItemStack import ItemStack
 
 from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
@@ -13,6 +14,14 @@ from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QG
 from unittest import TestCase
 from unittest.mock import Mock
 
+
+def DummyBlueprint(inputs, output):
+	return Blueprint(0, "", None, [ItemStack(inpId, 1) for inpId in inputs], ItemStack(output, 2));
+
+def DummyRefine(input, outputs):
+	return Refine(0, "", None,  ItemStack(input, 3), [ItemStack(outId, 4) for outId in outputs]);
+
+
 class TestProductionLineScene(TestCase):
 
 	def test_ConstructTree(self):
@@ -20,9 +29,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [2, 3], [4])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [1], [2])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [1], [3])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([2, 3], 4)), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 2)), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 3)), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -36,9 +45,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [3, 4], [5])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [2], [3])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(3, [1], [2, 4])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([3, 4], 5)), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([2], 3)), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [2, 4])), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -52,9 +61,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(1, [3, 4], [5])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(2, [2], [3])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(ProductionScheme(3, [1], [3, 4])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([3, 4], 5)), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(2, [3])), tookitMock))
+		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [3, 4])), tookitMock))
 
 		ConstructProcessGraphicTree(graphics)
 
@@ -68,7 +77,7 @@ class ItemStackGraphic(QGraphicsItem):
 	def __init__(self, aItemId, aParent, aPos, aToolkitTypes):
 		super().__init__(aParent)
 		self.setPos(aPos)
-		self.itemId = aItemId
+		self.__itemId = aItemId
 		self.rect = QRectF(-35, 0, 70, 35)
 		self.children = []
 		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(aItemId, 32), self)
@@ -86,6 +95,9 @@ class ItemStackGraphic(QGraphicsItem):
 
 	def boundingRect(self):
 		return self.rect
+	
+	def GetItemId(self):
+		return self.__itemId
 
 class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess, aToolkitTypes):
@@ -137,12 +149,12 @@ def ConstructProcessGraphicTree(graphics):
 	outputsByItemId = {}
 	for graphic in graphics:
 		for out in graphic.outputs:
-			outputsByItemId.setdefault(out.itemId, []).append(out)
+			outputsByItemId.setdefault(out.GetItemId(), []).append(out)
 	
 	for parentProcess in graphics:
 		for inp in parentProcess.inputs:
-			if inp.itemId in outputsByItemId:
-				outputs = outputsByItemId[inp.itemId]
+			if inp.GetItemId() in outputsByItemId:
+				outputs = outputsByItemId[inp.GetItemId()]
 				for out in outputs:
 					inp.children.append(out)
 
