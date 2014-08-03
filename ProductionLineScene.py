@@ -74,18 +74,19 @@ class TestProductionLineScene(TestCase):
 
 
 class ItemStackGraphic(QGraphicsItem):
-	def __init__(self, aItemId, aParent, aPos, aToolkitTypes):
+	def __init__(self, aItemStack, aParent, aPos, aToolkitTypes):
 		super().__init__(aParent)
 		self.setPos(aPos)
-		self.__itemId = aItemId
+		self.itemStack = aItemStack
 		self.rect = QRectF(-35, 0, 70, 35)
 		self.children = []
-		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(aItemId, 32), self)
+		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.itemStack.itemId, 32), self)
 		icon.setPos(QPointF(-33, 2))
 
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRect(self.rect)
+		painter.drawText(self.rect, Qt.AlignVCenter + Qt.AlignRight, str(self.itemStack.ammount))
 
 	def GetInScenePos(self):
 		return self.scenePos() + QPointF(-35, 17)
@@ -97,7 +98,7 @@ class ItemStackGraphic(QGraphicsItem):
 		return self.rect
 	
 	def GetItemId(self):
-		return self.__itemId
+		return self.itemStack.itemId
 
 class ProcessGraphic(QGraphicsItem):
 	def __init__(self, aProductionProcess, aToolkitTypes):
@@ -118,11 +119,11 @@ class ProcessGraphic(QGraphicsItem):
 
 		for inp in self.process.scheme.GetInputs():
 			inputOffset = inputOffset + space
-			self.inputs.append(ItemStackGraphic(inp.itemId, self, QPointF(0, inputOffset), aToolkitTypes))
+			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
 
 		for out in self.process.scheme.GetOutputs():
 			outputOffset = outputOffset + space
-			self.outputs.append(ItemStackGraphic(out.itemId, self, QPointF(width, outputOffset), aToolkitTypes))
+			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 
