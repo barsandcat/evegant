@@ -8,7 +8,7 @@ from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
 from PyQt5.QtGui import (QBrush, QColor, QFont, QIcon, QIntValidator, QPainter,
 		QPainterPath, QPen, QPixmap, QPolygonF)
-from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QGraphicsPathItem, QGraphicsScene
+from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QGraphicsPathItem, QGraphicsScene, QGraphicsProxyWidget, QSpinBox
 
 
 from unittest import TestCase
@@ -126,6 +126,10 @@ class ProcessGraphic(QGraphicsItem):
 			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
+		
+		spinbox = QSpinBox()
+		proxy = QGraphicsProxyWidget(self)
+		proxy.setWidget(spinbox)		
 
 
 	def GetChildren(self):
