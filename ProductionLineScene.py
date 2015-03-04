@@ -128,8 +128,10 @@ class ProcessGraphic(QGraphicsItem):
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 		
 		spinbox = QSpinBox()
+		spinbox.setRange(1, 1000000000)
 		proxy = QGraphicsProxyWidget(self)
 		proxy.setWidget(spinbox)		
+		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
 
 
 	def GetChildren(self):
