@@ -3,7 +3,6 @@ from ProductionLine import ProductionLine
 from ProductionProcess import ProductionProcess
 from Schemes import Blueprint, Refine
 from ItemStack import ItemStack
-from ItemStackGraphic import ItemStackGraphic
 from ProcessGraphic import ProcessGraphic
 
 from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
