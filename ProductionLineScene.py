@@ -3,6 +3,8 @@ from ProductionLine import ProductionLine
 from ProductionProcess import ProductionProcess
 from Schemes import Blueprint, Refine
 from ItemStack import ItemStack
+from ItemStackGraphic import ItemStackGraphic
+from ProcessGraphic import ProcessGraphic
 
 from PyQt5.QtCore import (pyqtSignal, QLineF, QPointF, QRect, QRectF, QSize,
 		QSizeF, Qt)
@@ -14,6 +16,7 @@ from PyQt5.QtWidgets import QApplication, QGraphicsItem, QGraphicsPixmapItem, QG
 from unittest import TestCase
 from unittest.mock import Mock
 
+from logging import warning, error, info
 
 def DummyBlueprint(inputs, output):
 	return Blueprint(0, "", None, [ItemStack(inpId, 1) for inpId in inputs], ItemStack(output, 2));
@@ -71,85 +74,6 @@ class TestProductionLineScene(TestCase):
 		assert len(graphics[0].inputs[1].children) == 1
 		assert len(graphics[1].inputs[0].children) == 0
 		assert len(graphics[2].inputs[0].children) == 0
-
-
-class ItemStackGraphic(QGraphicsItem):
-	def __init__(self, aItemStack, aParent, aPos, aToolkitTypes):
-		super().__init__(aParent)
-		self.setPos(aPos)
-		self.itemStack = aItemStack
-		self.rect = QRectF(-35, 0, 70, 35)
-		self.children = []
-		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.itemStack.itemId, 32), self)
-		icon.setPos(QPointF(-33, 2))
-
-	def paint(self, painter, option, widget=None):
-		painter.fillRect(self.rect, Qt.white)
-		painter.drawRect(self.rect)
-		painter.drawText(self.rect, Qt.AlignVCenter + Qt.AlignRight, str(self.itemStack.ammount))
-
-	def GetInScenePos(self):
-		return self.scenePos() + QPointF(-35, 17)
-
-	def GetOutScenePos(self):
-		return self.scenePos() + QPointF(35, 17)
-
-	def boundingRect(self):
-		return self.rect
-	
-	def GetItemId(self):
-		return self.itemStack.itemId
-
-class ProcessGraphic(QGraphicsItem):
-	def __init__(self, aProductionProcess, aToolkitTypes):
-		super().__init__()
-		self.process = aProductionProcess
-		self.col = 0
-		self.row = 0
-		self.inputs = []
-		self.outputs = []
-
-		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.process.scheme.schemeId, 32), self)
-		
-		width = 160
-		space = 40
-
-		inputOffset = 0
-		outputOffset = 0
-
-		for inp in self.process.scheme.GetInputs():
-			inputOffset = inputOffset + space
-			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
-
-		for out in self.process.scheme.GetOutputs():
-			outputOffset = outputOffset + space
-			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
-
-		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
-		
-		spinbox = QSpinBox()
-		spinbox.setRange(1, 1000000000)
-		proxy = QGraphicsProxyWidget(self)
-		proxy.setWidget(spinbox)		
-		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
-
-
-	def GetChildren(self):
-		children = set()
-		for inp in self.inputs:
-			for childOut in inp.children:
-				childProcess = childOut.parentItem()
-				children.add(childProcess)
-
-		return children
-
-	def paint(self, painter, option, widget=None):
-		painter.fillRect(self.rect, Qt.white)
-		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())
-
-	def boundingRect(self):
-		return self.rect
 
 def ConstructProcessGraphicTree(graphics):
 

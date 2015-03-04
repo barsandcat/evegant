@@ -4,3 +4,5 @@ class ProductionProcess:
 		self.scheme = aScheme
 		self.runs = 1
 
+	def SetRuns(self, aRuns):
+		self.runs = aRuns
