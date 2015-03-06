@@ -74,6 +74,15 @@ class TestProductionLineScene(TestCase):
 		assert len(graphics[1].inputs[0].children) == 0
 		assert len(graphics[2].inputs[0].children) == 0
 
+def GetChildrenProcesses(aProcessGraphic):
+	children = set()
+	for inp in aProcessGraphic.inputs:
+		for childOut in inp.children:
+			childProcess = childOut.parentItem()
+			children.add(childProcess)
+
+	return children
+		
 def GetProcessGraphicPositions(processGraphics):
 
 	outputsByItemId = {}
@@ -88,20 +97,8 @@ def GetProcessGraphicPositions(processGraphics):
 				for outGraphic in outputs:
 					inpGraphic.children.append(outGraphic)
 
-					
-					
-def GetChildrenProcesses(aProcessGraphic):
-	children = set()
-	for inp in aProcessGraphic.inputs:
-		for childOut in inp.children:
-			childProcess = childOut.parentItem()
-			children.add(childProcess)
-
-	return children
-
-def FillScene(aScene, aProcessGraphics):	
 	## Findout process column
-	queue = [aProcessGraphics[0]]
+	queue = [processGraphics[0]]
 	done = set()
 	while queue:
 		graphic = queue.pop(0)
@@ -115,9 +112,13 @@ def FillScene(aScene, aProcessGraphics):
 
 	## Findout process row
 	processRows = {}
-	for graphic in aProcessGraphics:
+	for graphic in processGraphics:
 		graphic.row = processRows.get(graphic.col, 0)
 		processRows[graphic.col] = graphic.row + 1
+					
+					
+
+def FillScene(aScene, aProcessGraphics):	
 		
 	maxRow = 0
 	maxCol = 0
