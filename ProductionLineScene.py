@@ -90,7 +90,7 @@ def ConstructProcessGraphicTree(graphics):
 
 					
 					
-def GetChildren(aProcessGraphic):
+def GetChildrenProcesses(aProcessGraphic):
 	children = set()
 	for inp in aProcessGraphic.inputs:
 		for childOut in inp.children:
@@ -108,7 +108,7 @@ def FillScene(aScene, aGraphics):
 		graphic = queue.pop(0)
 		if graphic not in done:
 			done.add(graphic)
-			children = GetChildren(graphic)
+			children = GetChildrenProcesses(graphic)
 			for child in children:
 				child.col = max(child.col, graphic.col + 1)
 				maxCol = max(maxCol, child.col)
