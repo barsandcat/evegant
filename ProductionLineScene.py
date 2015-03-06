@@ -77,16 +77,16 @@ class TestProductionLineScene(TestCase):
 def ConstructProcessGraphicTree(graphics):
 
 	outputsByItemId = {}
-	for graphic in graphics:
-		for out in graphic.outputs:
-			outputsByItemId.setdefault(out.GetItemId(), []).append(out)
+	for processGraphic in graphics:
+		for outGraphic in processGraphic.outputs:
+			outputsByItemId.setdefault(outGraphic.GetItemId(), []).append(outGraphic)
 	
 	for parentProcess in graphics:
-		for inp in parentProcess.inputs:
-			if inp.GetItemId() in outputsByItemId:
-				outputs = outputsByItemId[inp.GetItemId()]
-				for out in outputs:
-					inp.children.append(out)
+		for inpGraphic in parentProcess.inputs:
+			if inpGraphic.GetItemId() in outputsByItemId:
+				outputs = outputsByItemId[inpGraphic.GetItemId()]
+				for outGraphic in outputs:
+					inpGraphic.children.append(outGraphic)
 
 					
 					
