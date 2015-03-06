@@ -40,14 +40,6 @@ class ProcessGraphic(QGraphicsItem):
 		proxy.setWidget(spinbox)		
 		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
 
-	def GetChildren(self):
-		children = set()
-		for inp in self.inputs:
-			for childOut in inp.children:
-				childProcess = childOut.parentItem()
-				children.add(childProcess)
-
-		return children
 
 	def paint(self, painter, option, widget=None):
 		painter.fillRect(self.rect, Qt.white)
