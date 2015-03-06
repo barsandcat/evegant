@@ -35,7 +35,7 @@ class TestProductionLineScene(TestCase):
 		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 2)), tookitMock))
 		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 3)), tookitMock))
 
-		ConstructProcessGraphicTree(graphics)
+		GetProcessGraphicPositions(graphics)
 
 		assert len(graphics[0].inputs[0].children) == 1
 		assert len(graphics[0].inputs[1].children) == 1
@@ -51,7 +51,7 @@ class TestProductionLineScene(TestCase):
 		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([2], 3)), tookitMock))
 		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [2, 4])), tookitMock))
 
-		ConstructProcessGraphicTree(graphics)
+		GetProcessGraphicPositions(graphics)
 
 		assert len(graphics[0].inputs[0].children) == 1
 		assert len(graphics[0].inputs[1].children) == 1
@@ -67,21 +67,21 @@ class TestProductionLineScene(TestCase):
 		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(2, [3])), tookitMock))
 		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [3, 4])), tookitMock))
 
-		ConstructProcessGraphicTree(graphics)
+		GetProcessGraphicPositions(graphics)
 
 		assert len(graphics[0].inputs[0].children) == 2
 		assert len(graphics[0].inputs[1].children) == 1
 		assert len(graphics[1].inputs[0].children) == 0
 		assert len(graphics[2].inputs[0].children) == 0
 
-def ConstructProcessGraphicTree(graphics):
+def GetProcessGraphicPositions(processGraphics):
 
 	outputsByItemId = {}
-	for processGraphic in graphics:
+	for processGraphic in processGraphics:
 		for outGraphic in processGraphic.outputs:
 			outputsByItemId.setdefault(outGraphic.GetItemId(), []).append(outGraphic)
 	
-	for parentProcess in graphics:
+	for parentProcess in processGraphics:
 		for inpGraphic in parentProcess.inputs:
 			if inpGraphic.GetItemId() in outputsByItemId:
 				outputs = outputsByItemId[inpGraphic.GetItemId()]
@@ -99,10 +99,10 @@ def GetChildrenProcesses(aProcessGraphic):
 
 	return children
 
-def FillScene(aScene, aGraphics):	
+def FillScene(aScene, aProcessGraphics):	
 	## Findout process column
 	maxCol = 0
-	queue = [aGraphics[0]]
+	queue = [aProcessGraphics[0]]
 	done = set()
 	while queue:
 		graphic = queue.pop(0)
@@ -118,29 +118,33 @@ def FillScene(aScene, aGraphics):
 	## Findout process row
 	maxRow = 0
 	processRows = [0 for i in range(maxCol + 1)]
-	for graphic in aGraphics:
+	for graphic in aProcessGraphics:
 		graphic.row = processRows[graphic.col]
 		processRows[graphic.col] = processRows[graphic.col] + 1
 		maxRow = max(maxRow, graphic.row)
 	maxRow = maxRow + 1
 
+	
+	
 	colWidth = 400
 	rowHeigth = 360
 	border = 50
+
 	sceneWidth = colWidth * maxCol + border * 2
 	sceneHeight = rowHeigth * maxRow + border * 2
 	aScene.setSceneRect(QRectF(0, 0, sceneWidth, sceneHeight))
 	aScene.clear()
 
 	## Set process positions
-	for graphic in aGraphics:
+	for graphic in aProcessGraphics:
 		x = 50 + sceneWidth - (graphic.col + 1) * colWidth
 		y = 50 + graphic.row * rowHeigth
 		graphic.setPos(QPointF(x, y))
 		aScene.addItem(graphic)
 
+		
 	## Add lines
-	for graphic in aGraphics:
+	for graphic in aProcessGraphics:
 		for inp in graphic.inputs:
 			for child in inp.children:
 				controlOffset = 100
