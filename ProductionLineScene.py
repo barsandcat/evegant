@@ -36,11 +36,13 @@ class TestProductionLineScene(TestCase):
 		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 3)), tookitMock))
 
 		GetProcessGraphicPositions(graphics)
-
-		assert len(graphics[0].inputs[0].children) == 1
-		assert len(graphics[0].inputs[1].children) == 1
-		assert len(graphics[1].inputs[0].children) == 0
-		assert len(graphics[2].inputs[0].children) == 0
+		
+		assert graphics[0].col == 0
+		assert graphics[0].row == 0
+		assert graphics[1].col == 1
+		assert graphics[1].row == 0
+		assert graphics[2].col == 1
+		assert graphics[2].row == 1
 
 	def test_ConstructCyclesTree(self):
 		tookitMock = Mock()
@@ -53,11 +55,13 @@ class TestProductionLineScene(TestCase):
 
 		GetProcessGraphicPositions(graphics)
 
-		assert len(graphics[0].inputs[0].children) == 1
-		assert len(graphics[0].inputs[1].children) == 1
-		assert len(graphics[1].inputs[0].children) == 1
-		assert len(graphics[2].inputs[0].children) == 0
-
+		assert graphics[0].col == 0
+		assert graphics[0].row == 0
+		assert graphics[1].col == 1
+		assert graphics[1].row == 0
+		assert graphics[2].col == 2
+		assert graphics[2].row == 0
+		
 	def test_ConstructMultipleOutputsTree(self):
 		tookitMock = Mock()
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
@@ -69,10 +73,12 @@ class TestProductionLineScene(TestCase):
 
 		GetProcessGraphicPositions(graphics)
 
-		assert len(graphics[0].inputs[0].children) == 2
-		assert len(graphics[0].inputs[1].children) == 1
-		assert len(graphics[1].inputs[0].children) == 0
-		assert len(graphics[2].inputs[0].children) == 0
+		assert graphics[0].col == 0
+		assert graphics[0].row == 0
+		assert graphics[1].col == 1
+		assert graphics[1].row == 0
+		assert graphics[2].col == 1
+		assert graphics[2].row == 1
 
 def GetChildrenProcesses(aProcessGraphic):
 	children = set()
@@ -97,6 +103,7 @@ def GetProcessGraphicPositions(processGraphics):
 				for outGraphic in outputs:
 					inpGraphic.children.append(outGraphic)
 
+	processGraphicPositions = {}
 	## Findout process column
 	queue = [processGraphics[0]]
 	done = set()
