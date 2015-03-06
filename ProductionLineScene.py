@@ -101,7 +101,6 @@ def GetChildrenProcesses(aProcessGraphic):
 
 def FillScene(aScene, aProcessGraphics):	
 	## Findout process column
-	maxCol = 0
 	queue = [aProcessGraphics[0]]
 	done = set()
 	while queue:
@@ -111,20 +110,22 @@ def FillScene(aScene, aProcessGraphics):
 			children = GetChildrenProcesses(graphic)
 			for child in children:
 				child.col = max(child.col, graphic.col + 1)
-				maxCol = max(maxCol, child.col)
 				queue.append(child)
-	maxCol = maxCol + 1
+	
 
 	## Findout process row
-	maxRow = 0
-	processRows = [0 for i in range(maxCol + 1)]
+	processRows = {}
 	for graphic in aProcessGraphics:
-		graphic.row = processRows[graphic.col]
-		processRows[graphic.col] = processRows[graphic.col] + 1
+		graphic.row = processRows.get(graphic.col, 0)
+		processRows[graphic.col] = graphic.row + 1
+		
+	maxRow = 0
+	maxCol = 0
+	for graphic in aProcessGraphics:
 		maxRow = max(maxRow, graphic.row)
+		maxCol = max(maxCol, graphic.col)
 	maxRow = maxRow + 1
-
-	
+	maxCol = maxCol + 1
 	
 	colWidth = 400
 	rowHeigth = 360
