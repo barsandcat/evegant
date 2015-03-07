@@ -16,7 +16,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 
 from logging import warning, error, info
 
-from ProductionLineScene import ProcessGraphic, ConstructProcessGraphicTree, FillScene
+from ProductionLineScene import ProcessGraphic, GetProcessGraphicPositions, FillScene
 from ProductionLine import ProductionLine
 from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
@@ -61,7 +61,7 @@ class MainWindow(QMainWindow):
 
 	def	SetupGraphView(self):
 		graphics = [ProcessGraphic(process, self.toolkitTypes) for process in self.productionLine.processes]
-		ConstructProcessGraphicTree(graphics)
+		GetProcessGraphicPositions(graphics)
 
 		FillScene(self.scene, graphics)			
 		
