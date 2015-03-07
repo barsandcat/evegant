@@ -9,7 +9,6 @@ class ItemStackGraphic(QGraphicsItem):
 		self.setPos(aPos)
 		self.itemStack = aItemStack
 		self.rect = QRectF(-35, 0, 70, 35)
-		self.children = []
 		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.itemStack.itemId, 32), self)
 		icon.setPos(QPointF(-33, 2))
 

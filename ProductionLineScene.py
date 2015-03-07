@@ -98,6 +98,7 @@ def GetProcessGraphicPositions(processGraphics):
 	
 	for parentProcess in processGraphics:
 		for inpGraphic in parentProcess.inputs:
+			inpGraphic.children = []
 			if inpGraphic.GetItemId() in outputsByItemId:
 				outputs = outputsByItemId[inpGraphic.GetItemId()]
 				for outGraphic in outputs:
