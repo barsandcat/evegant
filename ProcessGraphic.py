@@ -23,11 +23,11 @@ class ProcessGraphic(QGraphicsItem):
 		inputOffset = 0
 		outputOffset = 0
 
-		for inp in self.process.scheme.GetInputs():
+		for inp in self.process.inputs:
 			inputOffset = inputOffset + space
 			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
 
-		for out in self.process.scheme.GetOutputs():
+		for out in self.process.outputs:
 			outputOffset = outputOffset + space
 			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
 
@@ -35,10 +35,18 @@ class ProcessGraphic(QGraphicsItem):
 		
 		spinbox = QSpinBox()
 		spinbox.setRange(1, 1000000000)
-		spinbox.valueChanged.connect(self.process.SetRuns)
+		spinbox.valueChanged.connect(self.OnRunChanged)
 		proxy = QGraphicsProxyWidget(self)
 		proxy.setWidget(spinbox)		
 		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
+
+	def OnRunChanged(self, value):
+		self.process.SetRuns(value)
+		self.update()
+		for inp in self.inputs:
+			inp.update()
+		for out in self.outputs:
+			out.update()
 
 
 	def paint(self, painter, option, widget=None):
