@@ -14,18 +14,15 @@ class ProductionLine(QAbstractTableModel):
 
 	def Update(self):
 		self.inputs = []
-		self.outputs = []
 
-		items = {}
+		self.items = {}
 		for process in self.processes:
 			for inp in process.scheme.GetInputs():
-				items[inp] = items.get(inp, 0) - 1
+				self.items[inp] = self.items.get(inp.itemId, 0) - inp.ammount
 			for out in process.scheme.GetOutputs():
-				items[out] = items.get(out, 0) + 1
+				self.items[out] = self.items.get(out.itemId, 0) + out.ammount
 
-		for item, count in items.items():
-			if count > 0:
-				self.outputs.append(item)
+		for item, count in self.items.items():
 			if count < 0:
 				self.inputs.append(item)
 
