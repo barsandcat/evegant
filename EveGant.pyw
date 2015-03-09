@@ -51,19 +51,19 @@ class MainWindow(QMainWindow):
 		self.view.resize(500, 500)
 
 
-		tableView = QTableView()
+		self.tableView = QTableView()
 
 		splitter1 = QSplitter(Qt.Vertical)
 		splitter1.addWidget(self.view)
-		splitter1.addWidget(tableView)
+		splitter1.addWidget(self.tableView)
 
 
-		splitter = QSplitter()
-		splitter.addWidget(self.treeView)
-		splitter.addWidget(splitter1)
+		splitter2 = QSplitter()
+		splitter2.addWidget(self.treeView)
+		splitter2.addWidget(splitter1)
 
 
-		self.setCentralWidget(splitter)
+		self.setCentralWidget(splitter2)
 		self.setWindowTitle("EveGant")
 
 		self.createMenus()
@@ -84,6 +84,8 @@ class MainWindow(QMainWindow):
 				self.productionLine.AddProcess(data)
 			else:
 				self.productionLine = ProductionLine(data)
+				self.tableView.setModel(self.productionLine)
+
 			self.filterModel.outputs = [itemStack.itemId for itemStack in self.productionLine.inputs]
 			self.filterModel.invalidateFilter()
 			self.SetupGraphView()

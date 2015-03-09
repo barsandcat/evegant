@@ -2,8 +2,11 @@
 from ProductionProcess import ProductionProcess
 from unittest import TestCase
 
-class ProductionLine:
+from PyQt5.QtCore import QAbstractTableModel, Qt
+
+class ProductionLine(QAbstractTableModel):
 	def __init__(self, rootProcessScheme):
+		super().__init__()
 		self.rootProcess = ProductionProcess(rootProcessScheme)
 		self.processes = []
 		self.processes.append(self.rootProcess)
@@ -31,3 +34,19 @@ class ProductionLine:
 		self.processes.append(ProductionProcess(aScheme))
 		self.Update()
 
+
+
+	def rowCount(self, parent):
+		return len(self.inputs)
+
+	def columnCount(self, parent):
+		return 2
+
+	def data(self, index, role):
+		if not index.isValid() or role != Qt.DisplayRole:
+			return None
+		if index.column() == 0:
+			return self.inputs[index.row()].itemId
+		else:
+			return self.inputs[index.row()].ammount		
+		return None
