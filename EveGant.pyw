@@ -12,7 +12,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 		QFontComboBox, QGraphicsItem, QGraphicsLineItem, QGraphicsPolygonItem,
 		QGraphicsScene, QGraphicsTextItem, QGraphicsView, QGridLayout,
 		QHBoxLayout, QLabel, QMainWindow, QMenu, QMessageBox, QSizePolicy,
-		QToolBox, QToolButton, QWidget, QTreeView, QSplitter, QSplashScreen)
+		QToolBox, QToolButton, QWidget, QTreeView, QSplitter, QSplashScreen, QTableView)
 
 from logging import warning, error, info
 
@@ -43,15 +43,25 @@ class MainWindow(QMainWindow):
 		self.treeView = QTreeView()
 		self.treeView.doubleClicked.connect(self.OnTreeDoubleClick)
 		self.treeView.setModel(self.filterModel)
+		self.treeView.setMaximumWidth(250)
 
 
 		self.scene = QGraphicsScene()
 		self.view = QGraphicsView(self.scene)
-		self.view.setMinimumWidth(500)
+		self.view.resize(500, 500)
+
+
+		tableView = QTableView()
+
+		splitter1 = QSplitter(Qt.Vertical)
+		splitter1.addWidget(self.view)
+		splitter1.addWidget(tableView)
+
 
 		splitter = QSplitter()
 		splitter.addWidget(self.treeView)
-		splitter.addWidget(self.view)
+		splitter.addWidget(splitter1)
+
 
 		self.setCentralWidget(splitter)
 		self.setWindowTitle("EveGant")
