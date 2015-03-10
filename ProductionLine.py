@@ -1,13 +1,13 @@
 
-from ProductionProcess import ProductionProcess
+from ProductionProcess import Process
 from unittest import TestCase
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
 
-class ProductionLine(QAbstractTableModel):
+class Line(QAbstractTableModel):
 	def __init__(self, rootProcessScheme):
 		super().__init__()
-		self.rootProcess = ProductionProcess(rootProcessScheme)
+		self.rootProcess = Process(rootProcessScheme)
 		self.processes = []
 		self.processes.append(self.rootProcess)
 		self.Update()
@@ -28,7 +28,7 @@ class ProductionLine(QAbstractTableModel):
 
 
 	def AddProcess(self, aScheme):
-		self.processes.append(ProductionProcess(aScheme))
+		self.processes.append(Process(aScheme))
 		self.Update()
 
 

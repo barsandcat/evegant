@@ -1,6 +1,5 @@
 
-from ProductionLine import ProductionLine
-from ProductionProcess import ProductionProcess
+from ProductionProcess import Process
 from Schemes import Blueprint, Refine
 from ItemStack import ItemStack
 from ProcessGraphic import ProcessGraphic
@@ -31,9 +30,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([2, 3], 4)), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 2)), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([1], 3)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([2, 3], 4)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([1], 2)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([1], 3)), tookitMock))
 
 		GetProcessGraphicPositions(graphics)
 		
@@ -49,9 +48,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([3, 4], 5)), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([2], 3)), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [2, 4])), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([3, 4], 5)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([2], 3)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyRefine(1, [2, 4])), tookitMock))
 
 		GetProcessGraphicPositions(graphics)
 
@@ -67,9 +66,9 @@ class TestProductionLineScene(TestCase):
 		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
 
 		graphics = []
-		graphics.append(ProcessGraphic(ProductionProcess(DummyBlueprint([3, 4], 5)), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(2, [3])), tookitMock))
-		graphics.append(ProcessGraphic(ProductionProcess(DummyRefine(1, [3, 4])), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyBlueprint([3, 4], 5)), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyRefine(2, [3])), tookitMock))
+		graphics.append(ProcessGraphic(Process(DummyRefine(1, [3, 4])), tookitMock))
 
 		GetProcessGraphicPositions(graphics)
 

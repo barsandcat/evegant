@@ -9,12 +9,12 @@ class TestProcess(TestCase):
 
 	def test_InitProcess(self):
 		scheme = Blueprint(0, "Name", 0, [ItemStack(0, 1)], ItemStack(0, 1))
-		process = ProductionProcess(scheme)
+		process = Process(scheme)
 		assert process.inputs[0].ammount == 1
 
 	def test_SetRuns(self):
 		scheme = Blueprint(0, "Name", 0, [ItemStack(0, 1)], ItemStack(0, 2))
-		process = ProductionProcess(scheme)
+		process = Process(scheme)
 		process.SetRuns(2)
 		assert process.inputs[0].ammount == 2
 		assert process.outputs[0].ammount == 4
@@ -22,7 +22,7 @@ class TestProcess(TestCase):
 from copy import copy
 
 
-class ProductionProcess:
+class Process:
 	def __init__(self, aScheme):
 		self.scheme = aScheme
 		self.runs = 1

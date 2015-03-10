@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 from logging import warning, error, info
 
 from ProductionLineScene import ProcessGraphic, GetProcessGraphicPositions, FillScene
-from ProductionLine import ProductionLine
+from ProductionLine import Line
 from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel
@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
 			if self.productionLine:
 				self.productionLine.AddProcess(data)
 			else:
-				self.productionLine = ProductionLine(data)
+				self.productionLine = Line(data)
 				self.tableView.setModel(self.productionLine)
 
 			self.filterModel.outputs = [itemStack.itemId for itemStack in self.productionLine.inputs]
