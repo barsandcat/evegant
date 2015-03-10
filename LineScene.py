@@ -1,5 +1,5 @@
 
-from ProductionProcess import Process
+from Process import Process
 from Schemes import Blueprint, Refine
 from ItemStack import ItemStack
 from ProcessGraphic import ProcessGraphic

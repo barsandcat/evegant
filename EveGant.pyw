@@ -16,8 +16,8 @@ from PyQt5.QtWidgets import (QAction, QApplication, QButtonGroup, QComboBox,
 
 from logging import warning, error, info
 
-from ProductionLineScene import ProcessGraphic, GetProcessGraphicPositions, FillScene
-from ProductionLine import Line
+from LineScene import ProcessGraphic, GetProcessGraphicPositions, FillScene
+from Line import Line
 from Schemes import CreateSchemesTree
 from ToolkitTypes import ToolkitTypes
 from EveTypesModel import EveTypesModel

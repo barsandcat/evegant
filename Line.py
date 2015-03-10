@@ -1,5 +1,5 @@
 
-from ProductionProcess import Process
+from Process import Process
 from unittest import TestCase
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
