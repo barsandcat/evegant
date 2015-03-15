@@ -83,7 +83,7 @@ class MainWindow(QMainWindow):
 			if self.productionLine:
 				self.productionLine.AddProcess(data)
 			else:
-				self.productionLine = Line(data)
+				self.productionLine = Line(data, self.toolkitTypes)
 				self.tableView.setModel(self.productionLine)
 
 			self.filterModel.outputs = [itemStack.itemId for itemStack in self.productionLine.inputs]

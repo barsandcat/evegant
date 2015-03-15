@@ -6,8 +6,9 @@ from logging import warning, error, info
 from PyQt5.QtCore import QAbstractTableModel, Qt
 
 class Line(QAbstractTableModel):
-	def __init__(self, rootProcessScheme):
+	def __init__(self, rootProcessScheme, aToolkitTypes):
 		super().__init__()
+		self.toolkitTypes = aToolkitTypes
 		self.processes = []
 		self.AddProcess(rootProcessScheme)
 		self.rootProcess = self.processes[0]
@@ -42,10 +43,14 @@ class Line(QAbstractTableModel):
 		return 2
 
 	def data(self, index, role):
-		if not index.isValid() or role != Qt.DisplayRole:
+		if not index.isValid():
 			return None
+
 		if index.column() == 0:
-			return self.inputs[index.row()].itemId
+			if role == Qt.DecorationRole:
+				return self.toolkitTypes.GetTypePixmap(self.inputs[index.row()].itemId, 32)
 		else:
-			return self.inputs[index.row()].ammount		
+			if role == Qt.DisplayRole:
+				return self.inputs[index.row()].ammount
+
 		return None
