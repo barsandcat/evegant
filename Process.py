@@ -24,12 +24,12 @@ from copy import copy
 
 class Process:
 
-	def __init__(self, aScheme, aRunsChangedCallback):
+	def __init__(self, aScheme):
 		self.scheme = aScheme
 		self.runs = 1
 		self.inputs = [copy(inp) for inp in aScheme.GetInputs()]
 		self.outputs = [copy(out) for out in aScheme.GetOutputs()]
-		self.runsChangedCallback = aRunsChangedCallback
+		self.runsChangedCallback = None
 
 
 	def SetRuns(self, aRuns):
@@ -42,7 +42,8 @@ class Process:
 		for i in range(len(self.outputs)):
 			self.outputs[i].ammount = schemeOutputs[i].ammount * aRuns
 
-		self.runsChangedCallback()
+		if self.runsChangedCallback:
+			self.runsChangedCallback()
 
 
 

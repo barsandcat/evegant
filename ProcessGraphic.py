@@ -35,14 +35,19 @@ class ProcessGraphic(QGraphicsItem):
 		
 		spinbox = QSpinBox()
 		spinbox.setRange(1, 1000000000)
+		spinbox.setValue(self.process.runs)
 		spinbox.valueChanged.connect(self.OnRunChanged)
+
 		proxy = QGraphicsProxyWidget(self)
 		proxy.setWidget(spinbox)		
 		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
+		self.runs = proxy
 
 	def OnRunChanged(self, value):
 		self.process.SetRuns(value)
 		self.update()
+		self.runs.update()
+
 		for inp in self.inputs:
 			inp.update()
 		for out in self.outputs:

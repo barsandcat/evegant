@@ -1,10 +1,36 @@
 
 from Process import Process
 from ItemStack import ItemStack
+from Schemes import BluePrint, Refine
 from unittest import TestCase
 from logging import warning, error, info
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
+
+
+class TestLine(TestCase):
+
+	def test_SimpleLine(self):
+		item1 = ItemStack(1, 1)
+		item2 = ItemStack(2, 1)
+		item3 = ItemStack(3, 1)
+		bluePrint1 = BluePrint(1, "", None, [item2], item1)
+		refine1 = Refine(1, "", None, item3, [item2])
+
+		tookitMock = Mock()
+		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
+		line = Line(bluePrint1, toolkitMock)
+		line.AddProcess(refine1)
+		assert len(line.balance) == 2
+		assert line.balance[0].ammount == 1
+		assert line.balance[0].itemId == 1
+		assert line.balance[1].ammount == 1
+		assert line.balance[1].itemId == 3
+
+
+
+
+
 
 class Line(QAbstractTableModel):
 	def __init__(self, rootProcessScheme, aToolkitTypes):
@@ -38,7 +64,9 @@ class Line(QAbstractTableModel):
 
 
 	def AddProcess(self, aScheme):
-		self.processes.append(Process(aScheme, self.Update))
+		process = Process(aScheme)
+		process.runsChangedCallback = self.Update
+		self.processes.append(process)
 		self.Update()
 
 
