@@ -1,12 +1,14 @@
 
 from Process import Process
 from ItemStack import ItemStack
-from Schemes import BluePrint, Refine
+from Schemes import Blueprint, Refine
+
 from unittest import TestCase
+from unittest.mock import Mock
 from logging import warning, error, info
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
-
+from PyQt5.QtGui import QPixmap
 
 class TestLine(TestCase):
 
@@ -14,11 +16,11 @@ class TestLine(TestCase):
 		item1 = ItemStack(1, 1)
 		item2 = ItemStack(2, 1)
 		item3 = ItemStack(3, 1)
-		bluePrint1 = BluePrint(1, "", None, [item2], item1)
+		bluePrint1 = Blueprint(1, "", None, [item2], item1)
 		refine1 = Refine(1, "", None, item3, [item2])
 
-		tookitMock = Mock()
-		tookitMock.GetTypePixmap = Mock(return_value=QPixmap())
+		toolkitMock = Mock()
+		toolkitMock.GetTypePixmap = Mock(return_value=QPixmap())
 		line = Line(bluePrint1, toolkitMock)
 		line.AddProcess(refine1)
 		assert len(line.balance) == 2
