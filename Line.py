@@ -1,5 +1,6 @@
 
 from Process import Process
+from ItemStack import ItemStack
 from unittest import TestCase
 from logging import warning, error, info
 
@@ -16,17 +17,22 @@ class Line(QAbstractTableModel):
 
 	def Update(self):
 		self.inputs = []
+		self.balance = []
 
-		self.items = {}
+		items = {}
 		for process in self.processes:
 			for inp in process.inputs:
-				self.items[inp] = self.items.get(inp.itemId, 0) - inp.ammount
+				items[inp.itemId] = items.get(inp.itemId, 0) - inp.ammount
 			for out in process.outputs:
-				self.items[out] = self.items.get(out.itemId, 0) + out.ammount
+				items[out.itemId] = items.get(out.itemId, 0) + out.ammount
 
-		for item, count in self.items.items():
+		for itemId, count in items.items():
+			if count != 0:
+				self.balance.append(ItemStack(itemId, count))
 			if count < 0:
-				self.inputs.append(item)
+				self.inputs.append(itemId)
+		
+
 
 		self.dataChanged.emit(self.index(0, 0), self.index(self.rowCount(None), 1))
 
@@ -37,7 +43,7 @@ class Line(QAbstractTableModel):
 
 
 	def rowCount(self, parent):
-		return len(self.inputs)
+		return len(self.balance)
 
 	def columnCount(self, parent):
 		return 2
@@ -48,9 +54,9 @@ class Line(QAbstractTableModel):
 
 		if index.column() == 0:
 			if role == Qt.DecorationRole:
-				return self.toolkitTypes.GetTypePixmap(self.inputs[index.row()].itemId, 32)
+				return self.toolkitTypes.GetTypePixmap(self.balance[index.row()].itemId, 32)
 		else:
 			if role == Qt.DisplayRole:
-				return self.inputs[index.row()].ammount
+				return self.balance[index.row()].ammount
 
 		return None

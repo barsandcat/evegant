@@ -86,7 +86,7 @@ class MainWindow(QMainWindow):
 				self.productionLine = Line(data, self.toolkitTypes)
 				self.tableView.setModel(self.productionLine)
 
-			self.filterModel.outputs = [itemStack.itemId for itemStack in self.productionLine.inputs]
+			self.filterModel.outputs = self.productionLine.inputs
 			self.filterModel.invalidateFilter()
 			self.SetupGraphView()
 
