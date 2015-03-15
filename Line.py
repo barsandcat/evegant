@@ -23,14 +23,11 @@ class TestLine(TestCase):
 		toolkitMock.GetTypePixmap = Mock(return_value=QPixmap())
 		line = Line(bluePrint1, toolkitMock)
 		line.AddProcess(refine1)
-		assert len(line.balance) == 2
-		assert line.balance[0].ammount == 1
-		assert line.balance[0].itemId == 1
-		assert line.balance[1].ammount == 1
-		assert line.balance[1].itemId == 3
-
-
-
+		self.assertEqual(len(line.balance), 2)
+		self.assertEqual(line.balance[0].itemId, 1)
+		self.assertEqual(line.balance[0].ammount, 1)
+		self.assertEqual(line.balance[1].itemId, 3)
+		self.assertEqual(line.balance[1].ammount, -1)
 
 
 
