@@ -41,6 +41,8 @@ class Line(QAbstractTableModel):
 
 
 	def Update(self):
+		self.beginResetModel()
+		
 		self.inputs = []
 		self.balance = []
 
@@ -59,8 +61,7 @@ class Line(QAbstractTableModel):
 		
 
 
-		self.dataChanged.emit(self.index(0, 0), self.index(self.rowCount(None), 1))
-
+		self.endResetModel()
 
 	def AddProcess(self, aScheme):
 		process = Process(aScheme)
