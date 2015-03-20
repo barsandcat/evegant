@@ -166,7 +166,6 @@ def YamlToBlueprint(aBlueprint, aName, aGroup):
 		outputs.append(ItemStack(id, params["quantity"]))		
 	
 	return Blueprint(blueprintId, aName, aGroup, inputs, outputs[0])
-
 	
 class MarketGroup:
 	def __init__(self, aName, aParent=None):
@@ -197,4 +196,18 @@ class MarketGroup:
 
 	def GetOutputs(self):
 		return []
+		
+	def GetInputs(self):
+		return []
 
+def SchemeToStr(aScheme):
+	inputs = ""
+	for inp in aScheme.GetInputs():
+		inputs += str(inp)
+		inputs += "\n"
+	outputs = ""
+	for out in aScheme.GetOutputs():
+		outputs += str(out)
+		outputs += "\n"
+	
+	return aScheme.GetName() + ":\nInputs:\n" + inputs + "Outputs:\n" + outputs

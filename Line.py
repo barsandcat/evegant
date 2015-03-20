@@ -1,7 +1,7 @@
 
 from Process import Process
 from ItemStack import ItemStack
-from Schemes import Blueprint, Refine
+from Schemes import Blueprint, Refine, SchemeToStr
 
 from unittest import TestCase
 from unittest.mock import Mock
@@ -28,7 +28,49 @@ class TestLine(TestCase):
 		self.assertEqual(line.balance[0].ammount, 1)
 		self.assertEqual(line.balance[1].itemId, 3)
 		self.assertEqual(line.balance[1].ammount, -1)
+		
+	def test_BalanceOreRefine(self):
+		bantamBlueprint = Blueprint(1, "", None,
+			[		
+			ItemStack(34, 22222),
+			ItemStack(35, 8000 ),
+			ItemStack(36, 2444 ),
+			ItemStack(37, 500  ),
+			ItemStack(38, 2    ),
+			ItemStack(39, 2    ),
+			],
+			ItemStack(582, 1))
+				
+		omber = Refine(2, "", None,
+			ItemStack(1227, 100),
+			[
+			ItemStack(34, 85),
+			ItemStack(35, 34),
+			ItemStack(37, 85),
+			])
+		
+		plagioclase = Refine(3, "", None,
+			ItemStack(18, 100),
+			[
+			ItemStack(34, 107),
+			ItemStack(35, 213),
+			ItemStack(36, 107),
+			])
+		
+		scordite = Refine(4, "", None,
+			ItemStack(1228, 100),
+			[
+			ItemStack(34, 346),
+			ItemStack(35, 173),
+			])
 
+		toolkitMock = Mock()
+		toolkitMock.GetTypePixmap = Mock(return_value=QPixmap())
+		line = Line(bantamBlueprint, toolkitMock)
+		line.AddProcess(omber)
+		line.AddProcess(plagioclase)
+		line.AddProcess(scordite)
+		line.Balance()
 
 
 class Line(QAbstractTableModel):
@@ -65,9 +107,13 @@ class Line(QAbstractTableModel):
 
 	def AddProcess(self, aScheme):
 		process = Process(aScheme)
+		warning(SchemeToStr(aScheme))
 		process.runsChangedCallback = self.Update
 		self.processes.append(process)
 		self.Update()
+		
+	def Balance(self):
+		pass
 
 
 	def rowCount(self, parent):
