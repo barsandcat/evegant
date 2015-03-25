@@ -71,6 +71,9 @@ class TestLine(TestCase):
 		line.AddProcess(plagioclase)
 		line.AddProcess(scordite)
 		line.Balance()
+		self.assertGreater(line.processes[1].runs, 1)
+		self.assertGreater(line.processes[2].runs, 1)
+		self.assertGreater(line.processes[3].runs, 1)
 
 
 class Line(QAbstractTableModel):
