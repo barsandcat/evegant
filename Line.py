@@ -9,6 +9,7 @@ from logging import warning, error, info
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from PyQt5.QtGui import QPixmap
+from scipy.optimize import linprog
 
 class TestLine(TestCase):
 
@@ -29,7 +30,7 @@ class TestLine(TestCase):
 		self.assertEqual(line.balance[1].itemId, 3)
 		self.assertEqual(line.balance[1].ammount, -1)
 
-	def test_ConstructConstraints(self):
+	def test_ConstructProgramm(self):
 		ORE = 1
 		MINERAL = 2
 		PART = 3
@@ -44,9 +45,10 @@ class TestLine(TestCase):
 		line = Line(blueprint2, toolkitMock)
 		line.AddProcess(refine)
 		line.AddProcess(blueprint1)
-		function, constraints = line.ConstructLinearProgramm()
-		self.assertEqual(function, [1, 1])
-		self.assertEqual(constraints, [[-50, 10], [0, -1]])
+		c, A, b  = line.ConstructLinearProgramm()
+		self.assertEqual(c, [1, 1])
+		self.assertEqual(A, [[-50, 10], [0, -1]])
+		self.assertEqual(b, [-100, -3])
 
 		
 	def test_BalanceOreRefine(self):
@@ -159,6 +161,7 @@ class Line(QAbstractTableModel):
 		# [-50, 10], item1
 		# [0, -1]    item2
 		#]
+		#[-100, -3]
 
 		#Excluding root process - we optimazing against it
 		processes = self.processes[1:]
@@ -166,14 +169,20 @@ class Line(QAbstractTableModel):
 		function = [1 for proc in processes]
 		#Iteratin over all itmes that are connected (used) inside line, 
 		#but not starting items, main product and byproducts
-		constraintsMatrix = []
-		for item in inputs.intersection(outputs):
+		items = inputs.intersection(outputs)
+		matrixA = []
+		for item in items:
 			row = []
 			for process in processes:
 				row.append(tmpMap[process].get(item, 0))
-			constraintsMatrix.append(row)
+			matrixA.append(row)
 
-		return function, constraintsMatrix
+		matrixb = []
+		rootProcess = self.rootProcess
+		for item in items:
+			matrixb.append(-1 * tmpMap[rootProcess].get(item, 0))
+
+		return function, matrixA, matrixb
 		
 	def Balance(self):
 		pass
