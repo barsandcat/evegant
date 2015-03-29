@@ -44,7 +44,8 @@ class TestLine(TestCase):
 		line = Line(blueprint2, toolkitMock)
 		line.AddProcess(refine)
 		line.AddProcess(blueprint1)
-		constraints = line.ConstructLinearProgramConstraints()
+		function, constraints = line.ConstructLinearProgramm()
+		self.assertEqual(function, [1, 1])
 		self.assertEqual(constraints, [[-50, 10], [0, -1]])
 
 		
@@ -130,12 +131,12 @@ class Line(QAbstractTableModel):
 		self.processes.append(process)
 		self.Update()
 
-	def ConstructLinearProgramConstraints(self):
+	def ConstructLinearProgramm(self):
 
-		# List all ingrediets = number of constraints
-		tmpMap = {} #Optimization - to avoid searching certain item in process inputs or outputs
-		inputs = set()
-		outputs = set()
+		# Caching up:
+		tmpMap = {} #ammount[process][item] map: optimization - to avoid searching certain item in process inputs or outputs
+		inputs = set() #Unique items used as inputs
+		outputs = set() #Unique items used as outputs
 
 		for process in self.processes:
 			tmpProcessMap = {}
@@ -150,23 +151,29 @@ class Line(QAbstractTableModel):
 
 			tmpMap[process] = tmpProcessMap
 
-
+		#Function sample
+		#[1, 1]
+		#Constraints sample
 		# pr1, pr2
 		#[ 
 		# [-50, 10], item1
 		# [0, -1]    item2
 		#]
-		#Excluding root process, since it goes to separte matrix
+
+		#Excluding root process - we optimazing against it
 		processes = self.processes[1:]
-		#Iteratin over all itmes that are connected inside line
-		matrix = []
+		#We optimize (minimizing) sum of all production runs
+		function = [1 for proc in processes]
+		#Iteratin over all itmes that are connected (used) inside line, 
+		#but not starting items, main product and byproducts
+		constraintsMatrix = []
 		for item in inputs.intersection(outputs):
 			row = []
 			for process in processes:
 				row.append(tmpMap[process].get(item, 0))
-			matrix.append(row)
+			constraintsMatrix.append(row)
 
-		return matrix
+		return function, constraintsMatrix
 		
 	def Balance(self):
 		pass
