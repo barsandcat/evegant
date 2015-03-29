@@ -93,6 +93,10 @@ class TestLine(TestCase):
 		line.AddProcess(plagioclase)
 		line.AddProcess(scordite)
 		line.Balance()
+		self.assertGreater(line.processes[1].runs, 1)
+		self.assertGreater(line.processes[2].runs, 1)
+		self.assertGreater(line.processes[3].runs, 1)
+
 
 
 class Line(QAbstractTableModel):
@@ -153,16 +157,6 @@ class Line(QAbstractTableModel):
 
 			tmpMap[process] = tmpProcessMap
 
-		#Function sample
-		#[1, 1]
-		#Constraints sample
-		# pr1, pr2
-		#[ 
-		# [-50, 10], item1
-		# [0, -1]    item2
-		#]
-		#[-100, -3]
-
 		#Excluding root process - we optimazing against it
 		processes = self.processes[1:]
 		#We optimize (minimizing) sum of all production runs
@@ -185,7 +179,18 @@ class Line(QAbstractTableModel):
 		return function, matrixA, matrixb
 		
 	def Balance(self):
-		pass
+		c, A, b = self.ConstructLinearProgramm()
+		print(c)
+		print(A)
+		print(b)
+
+		#For some reason it fails if default bounds 0, None are used
+		res = linprog(c, A, b, bounds=(1, None))
+		print(res)
+		assert(res.success)
+		for i in range(len(res.x)):
+			self.processes[i + 1].runs = res.x[i]
+		self.Update()
 
 
 	def rowCount(self, parent):
