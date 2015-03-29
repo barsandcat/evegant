@@ -28,6 +28,25 @@ class TestLine(TestCase):
 		self.assertEqual(line.balance[0].ammount, 1)
 		self.assertEqual(line.balance[1].itemId, 3)
 		self.assertEqual(line.balance[1].ammount, -1)
+
+	def test_ConstructConstraints(self):
+		ORE = 1
+		MINERAL = 2
+		PART = 3
+		SHIP = 4
+
+		refine = Refine(1, "", None, ItemStack(ORE, 1), [ItemStack(MINERAL, 50)])
+		blueprint1 = Blueprint(1, "", None, [ItemStack(MINERAL, 10)], ItemStack(PART, 1))
+		blueprint2 = Blueprint(2, "", None, [ItemStack(MINERAL, 100), ItemStack(PART, 3)], ItemStack(SHIP, 1) )
+
+		toolkitMock = Mock()
+		toolkitMock.GetTypePixmap = Mock(return_value=QPixmap())
+		line = Line(blueprint2, toolkitMock)
+		line.AddProcess(refine)
+		line.AddProcess(blueprint1)
+		constraints = line.ConstructLinearProgramConstraints()
+		self.assertEqual(constraints, [[-50, 10], [0, -1]])
+
 		
 	def test_BalanceOreRefine(self):
 		bantamBlueprint = Blueprint(1, "", None,
@@ -107,10 +126,47 @@ class Line(QAbstractTableModel):
 
 	def AddProcess(self, aScheme):
 		process = Process(aScheme)
-		warning(SchemeToStr(aScheme))
 		process.runsChangedCallback = self.Update
 		self.processes.append(process)
 		self.Update()
+
+	def ConstructLinearProgramConstraints(self):
+
+		# List all ingrediets = number of constraints
+		tmpMap = {} #Optimization - to avoid searching certain item in process inputs or outputs
+		inputs = set()
+		outputs = set()
+
+		for process in self.processes:
+			tmpProcessMap = {}
+	
+			for inp in process.inputs:
+				inputs.add(inp.itemId)
+				tmpProcessMap[inp.itemId] = inp.ammount
+	
+			for out in process.outputs:
+				outputs.add(out.itemId)
+				tmpProcessMap[out.itemId] = -out.ammount
+
+			tmpMap[process] = tmpProcessMap
+
+
+		# pr1, pr2
+		#[ 
+		# [-50, 10], item1
+		# [0, -1]    item2
+		#]
+		#Excluding root process, since it goes to separte matrix
+		processes = self.processes[1:]
+		#Iteratin over all itmes that are connected inside line
+		matrix = []
+		for item in inputs.intersection(outputs):
+			row = []
+			for process in processes:
+				row.append(tmpMap[process].get(item, 0))
+			matrix.append(row)
+
+		return matrix
 		
 	def Balance(self):
 		pass
