@@ -9,6 +9,7 @@ from logging import warning, error, info
 
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from PyQt5.QtGui import QPixmap
+from scipy.optimize import linprog
 
 class TestLine(TestCase):
 
@@ -28,6 +29,27 @@ class TestLine(TestCase):
 		self.assertEqual(line.balance[0].ammount, 1)
 		self.assertEqual(line.balance[1].itemId, 3)
 		self.assertEqual(line.balance[1].ammount, -1)
+
+	def test_ConstructProgramm(self):
+		ORE = 1
+		MINERAL = 2
+		PART = 3
+		SHIP = 4
+
+		refine = Refine(1, "", None, ItemStack(ORE, 1), [ItemStack(MINERAL, 50)])
+		blueprint1 = Blueprint(1, "", None, [ItemStack(MINERAL, 10)], ItemStack(PART, 1))
+		blueprint2 = Blueprint(2, "", None, [ItemStack(MINERAL, 100), ItemStack(PART, 3)], ItemStack(SHIP, 1) )
+
+		toolkitMock = Mock()
+		toolkitMock.GetTypePixmap = Mock(return_value=QPixmap())
+		line = Line(blueprint2, toolkitMock)
+		line.AddProcess(refine)
+		line.AddProcess(blueprint1)
+		c, A, b  = line.ConstructLinearProgramm()
+		self.assertEqual(c, [1, 1])
+		self.assertEqual(A, [[-50, 10], [0, -1]])
+		self.assertEqual(b, [-100, -3])
+
 		
 	def test_BalanceOreRefine(self):
 		bantamBlueprint = Blueprint(1, "", None,
@@ -76,6 +98,7 @@ class TestLine(TestCase):
 		self.assertGreater(line.processes[3].runs, 1)
 
 
+
 class Line(QAbstractTableModel):
 	def __init__(self, rootProcessScheme, aToolkitTypes):
 		super().__init__()
@@ -110,13 +133,64 @@ class Line(QAbstractTableModel):
 
 	def AddProcess(self, aScheme):
 		process = Process(aScheme)
-		warning(SchemeToStr(aScheme))
 		process.runsChangedCallback = self.Update
 		self.processes.append(process)
 		self.Update()
+
+	def ConstructLinearProgramm(self):
+
+		# Caching up:
+		tmpMap = {} #ammount[process][item] map: optimization - to avoid searching certain item in process inputs or outputs
+		inputs = set() #Unique items used as inputs
+		outputs = set() #Unique items used as outputs
+
+		for process in self.processes:
+			tmpProcessMap = {}
+	
+			for inp in process.inputs:
+				inputs.add(inp.itemId)
+				tmpProcessMap[inp.itemId] = inp.ammount
+	
+			for out in process.outputs:
+				outputs.add(out.itemId)
+				tmpProcessMap[out.itemId] = -out.ammount
+
+			tmpMap[process] = tmpProcessMap
+
+		#Excluding root process - we optimazing against it
+		processes = self.processes[1:]
+		#We optimize (minimizing) sum of all production runs
+		function = [1 for proc in processes]
+		#Iteratin over all itmes that are connected (used) inside line, 
+		#but not starting items, main product and byproducts
+		items = inputs.intersection(outputs)
+		matrixA = []
+		for item in items:
+			row = []
+			for process in processes:
+				row.append(tmpMap[process].get(item, 0))
+			matrixA.append(row)
+
+		matrixb = []
+		rootProcess = self.rootProcess
+		for item in items:
+			matrixb.append(-1 * tmpMap[rootProcess].get(item, 0))
+
+		return function, matrixA, matrixb
 		
 	def Balance(self):
-		pass
+		c, A, b = self.ConstructLinearProgramm()
+		print(c)
+		print(A)
+		print(b)
+
+		#For some reason it fails if default bounds 0, None are used
+		res = linprog(c, A, b, bounds=(1, None))
+		print(res)
+		assert(res.success)
+		for i in range(len(res.x)):
+			self.processes[i + 1].runs = res.x[i]
+		self.Update()
 
 
 	def rowCount(self, parent):
