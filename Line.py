@@ -49,7 +49,7 @@ class TestLine(TestCase):
 		self.assertEqual(c, [1, 1, 1])
 		self.assertEqual(Aub, [[100, -50, 10], [3, 0, -1]])
 		self.assertEqual(bub, [0, 0])
-		self.assertEqual(Aeq, [1, 0, 0])
+		self.assertEqual(Aeq, [[1, 0, 0]])
 		self.assertEqual(beq, [1])
 
 		
@@ -107,6 +107,7 @@ class Line(QAbstractTableModel):
 		self.toolkitTypes = aToolkitTypes
 		self.processes = []
 		self.AddProcess(rootProcessScheme)		
+		self.processes[0].manual = True
 
 
 	def Update(self):
@@ -159,43 +160,58 @@ class Line(QAbstractTableModel):
 				tmpProcessMap[out.itemId] = -out.ammount
 
 			tmpMap[process] = tmpProcessMap
-
-		#Excluding root process - we optimazing against it
-		processes = self.processes[1:]
+		
 		#We optimize (minimizing) sum of all production runs
-		function = [1 for proc in processes]
-		#Iteratin over all itmes that are connected (used) inside line, 
+		c = [1 for proc in self.processes]
+
+		#Iteratin over all itmes that are connected (used) inside line,
 		#but not starting items, main product and byproducts
+		#Columns are processes, rows - items
 		items = inputs.intersection(outputs)
-		matrixA = []
+		Aub = []
+		bub = []
 		for item in items:
 			row = []
-			for process in processes:
+			for process in self.processes:
 				row.append(tmpMap[process].get(item, 0))
-			matrixA.append(row)
+			Aub.append(row)
+			bub.append(0)
 
-		matrixb = []
-		rootProcess = self.processes[0]
-		for item in items:
-			matrixb.append(-1 * tmpMap[rootProcess].get(item, 0))
+		#Equalities for manual processes
+		#Columns are processes, rows - manual processes
+		Aeq = []
+		beq = []
+		for process in self.processes:
+			if process.manual:
+				row = []
+				for process2 in self.processes:
+					if process == process2:
+						row.append(1)
+					else:
+						row.append(0)
+				
+				Aeq.append(row)
+				beq.append(process.runs)
 
-		return function, matrixA, matrixb
+
+		return c, Aub, bub, Aeq, beq
 		
 	def Balance(self):
 		if len(self.processes) < 2:
 			return
 			
-		c, A, b = self.ConstructLinearProgramm()
+		c, Aub, bub, Aeq, beq = self.ConstructLinearProgramm()
 		print(c)
-		print(A)
-		print(b)
+		print(Aub)
+		print(bub)
+		print(Aeq)
+		print(beq)
 
-		#For some reason it fails if default bounds 0, None are used
-		res = linprog(c, A, b, bounds=(1, None))
+		res = linprog(c, Aub, bub, Aeq, beq)
 		print(res)
 		assert(res.success)
 		for i in range(len(res.x)):
-			self.processes[i + 1].SetRuns(res.x[i])
+			self.processes[i].SetRuns(res.x[i])
 
 	def rowCount(self, parent):
 		return len(self.balance)

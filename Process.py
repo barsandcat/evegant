@@ -30,6 +30,7 @@ class Process:
 		self.inputs = [copy(inp) for inp in aScheme.GetInputs()]
 		self.outputs = [copy(out) for out in aScheme.GetOutputs()]
 		self.runsChangedCallback = None
+		self.manual = False
 
 
 	def SetRuns(self, aRuns):
