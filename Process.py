@@ -42,8 +42,6 @@ class Process:
 		for i in range(len(self.outputs)):
 			self.outputs[i].ammount = schemeOutputs[i].ammount * aRuns
 
-		if self.runsChangedCallback:
-			self.runsChangedCallback()
 
 
 

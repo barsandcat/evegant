@@ -104,12 +104,13 @@ class Line(QAbstractTableModel):
 		super().__init__()
 		self.toolkitTypes = aToolkitTypes
 		self.processes = []
-		self.AddProcess(rootProcessScheme)
-		self.rootProcess = self.processes[0]
+		self.AddProcess(rootProcessScheme)		
 
 
 	def Update(self):
 		self.beginResetModel()
+		
+		self.Balance()
 		
 		self.inputs = []
 		self.balance = []
@@ -147,11 +148,11 @@ class Line(QAbstractTableModel):
 		for process in self.processes:
 			tmpProcessMap = {}
 	
-			for inp in process.inputs:
+			for inp in process.scheme.GetInputs():
 				inputs.add(inp.itemId)
 				tmpProcessMap[inp.itemId] = inp.ammount
 	
-			for out in process.outputs:
+			for out in process.scheme.GetOutputs():
 				outputs.add(out.itemId)
 				tmpProcessMap[out.itemId] = -out.ammount
 
@@ -172,13 +173,16 @@ class Line(QAbstractTableModel):
 			matrixA.append(row)
 
 		matrixb = []
-		rootProcess = self.rootProcess
+		rootProcess = self.processes[0]
 		for item in items:
 			matrixb.append(-1 * tmpMap[rootProcess].get(item, 0))
 
 		return function, matrixA, matrixb
 		
 	def Balance(self):
+		if len(self.processes) < 2:
+			return
+			
 		c, A, b = self.ConstructLinearProgramm()
 		print(c)
 		print(A)
@@ -189,9 +193,7 @@ class Line(QAbstractTableModel):
 		print(res)
 		assert(res.success)
 		for i in range(len(res.x)):
-			self.processes[i + 1].runs = res.x[i]
-		self.Update()
-
+			self.processes[i + 1].SetRuns(res.x[i])
 
 	def rowCount(self, parent):
 		return len(self.balance)
