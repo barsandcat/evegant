@@ -45,8 +45,6 @@ class ProcessGraphic(QGraphicsItem):
 
 	def OnRunChanged(self, value):
 		self.process.SetRuns(value)
-		if self.process.runsChangedCallback:
-			self.process.runsChangedCallback()
 		self.update()
 		self.runs.update()
 

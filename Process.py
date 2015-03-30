@@ -34,6 +34,9 @@ class Process:
 
 
 	def SetRuns(self, aRuns):
+		if self.runs == aRuns:
+			return
+			
 		self.runs = aRuns
 		schemeInputs = self.scheme.GetInputs()
 		for i in range(len(self.inputs)):
@@ -42,6 +45,10 @@ class Process:
 		schemeOutputs = self.scheme.GetOutputs()
 		for i in range(len(self.outputs)):
 			self.outputs[i].ammount = schemeOutputs[i].ammount * aRuns
+
+		if self.manual and self.runsChangedCallback:
+			self.runsChangedCallback()
+
 
 
 
