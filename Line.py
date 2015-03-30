@@ -45,10 +45,12 @@ class TestLine(TestCase):
 		line = Line(blueprint2, toolkitMock)
 		line.AddProcess(refine)
 		line.AddProcess(blueprint1)
-		c, A, b  = line.ConstructLinearProgramm()
-		self.assertEqual(c, [1, 1])
-		self.assertEqual(A, [[-50, 10], [0, -1]])
-		self.assertEqual(b, [-100, -3])
+		c, Aub, bub, Aeq, beq  = line.ConstructLinearProgramm()
+		self.assertEqual(c, [1, 1, 1])
+		self.assertEqual(Aub, [[100, -50, 10], [3, 0, -1]])
+		self.assertEqual(bub, [0, 0])
+		self.assertEqual(Aeq, [1, 0, 0])
+		self.assertEqual(beq, [1])
 
 		
 	def test_BalanceOreRefine(self):
