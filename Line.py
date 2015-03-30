@@ -201,17 +201,13 @@ class Line(QAbstractTableModel):
 			return
 			
 		c, Aub, bub, Aeq, beq = self.ConstructLinearProgramm()
-		print(c)
-		print(Aub)
-		print(bub)
-		print(Aeq)
-		print(beq)
-
 		res = linprog(c, Aub, bub, Aeq, beq)
-		print(res)
-		assert(res.success)
-		for i in range(len(res.x)):
-			self.processes[i].SetRuns(res.x[i])
+
+		if res.success:
+			for i in range(len(res.x)):
+				self.processes[i].SetRuns(res.x[i])
+		else:
+			error(str(c) + '\n' +  str(Aub)  + '\n' + str(bub)  + '\n' + str(Aeq)  + '\n' + str(beq)  + '\n' + str(res))
 
 	def rowCount(self, parent):
 		return len(self.balance)
