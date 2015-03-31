@@ -10,6 +10,7 @@ from logging import warning, error, info
 from PyQt5.QtCore import QAbstractTableModel, Qt
 from PyQt5.QtGui import QPixmap
 from scipy.optimize import linprog
+from math import ceil
 
 class TestLine(TestCase):
 
@@ -205,7 +206,7 @@ class Line(QAbstractTableModel):
 
 		if res.success:
 			for i in range(len(res.x)):
-				self.processes[i].SetRuns(res.x[i])
+				self.processes[i].SetRuns(ceil(res.x[i]))
 		else:
 			error(str(c) + '\n' +  str(Aub)  + '\n' + str(bub)  + '\n' + str(Aeq)  + '\n' + str(beq)  + '\n' + str(res))
 
