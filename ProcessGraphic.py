@@ -42,6 +42,7 @@ class ProcessGraphic(QGraphicsItem):
 		proxy.setWidget(spinbox)		
 		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
 		self.runs = proxy
+		self.spinbox = spinbox
 
 	def OnRunChanged(self, value):
 		self.process.SetRuns(value)
@@ -55,6 +56,10 @@ class ProcessGraphic(QGraphicsItem):
 
 
 	def paint(self, painter, option, widget=None):
+		if not self.process.manual:
+			self.spinbox.setValue(self.process.runs)
+
+
 		painter.fillRect(self.rect, Qt.white)
 		painter.drawRoundedRect(self.rect, 10, 10)
 		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())

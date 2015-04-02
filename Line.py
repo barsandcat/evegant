@@ -103,9 +103,10 @@ class TestLine(TestCase):
 
 
 class Line(QAbstractTableModel):
-	def __init__(self, rootProcessScheme, aToolkitTypes):
+	def __init__(self, rootProcessScheme, aToolkitTypes, aScene):
 		super().__init__()
 		self.toolkitTypes = aToolkitTypes
+		self.scene = aScene
 		self.processes = []
 		self.AddProcess(rootProcessScheme)		
 		self.processes[0].manual = True
@@ -135,6 +136,7 @@ class Line(QAbstractTableModel):
 
 
 		self.endResetModel()
+		self.scene.update()
 
 	def AddProcess(self, aScheme):
 		process = Process(aScheme)
