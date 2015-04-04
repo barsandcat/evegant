@@ -1,6 +1,6 @@
 
 
-from ItemStackGraphic import ItemStackGraphic
+from ItemStackGraphic import InputGraphic, OutputGraphic
 
 from PyQt5.QtCore import QPointF, QRectF, QSizeF, Qt
 from PyQt5.QtWidgets import QGraphicsItem, QGraphicsPixmapItem, QGraphicsProxyWidget, QSpinBox
@@ -16,20 +16,21 @@ class ProcessGraphic(QGraphicsItem):
 		self.outputs = []
 
 		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.process.scheme.schemeId, 32), self)
+		icon.setPos(2, 2)
 		
 		width = 160
 		space = 40
 
-		inputOffset = 0
-		outputOffset = 0
+		inputOffset = 40
+		outputOffset = 40
 
 		for inp in self.process.inputs:
 			inputOffset = inputOffset + space
-			self.inputs.append(ItemStackGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
+			self.inputs.append(InputGraphic(inp, self, QPointF(0, inputOffset), aToolkitTypes))
 
 		for out in self.process.outputs:
 			outputOffset = outputOffset + space
-			self.outputs.append(ItemStackGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
+			self.outputs.append(OutputGraphic(out, self, QPointF(width, outputOffset), aToolkitTypes))
 
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 		
@@ -40,7 +41,7 @@ class ProcessGraphic(QGraphicsItem):
 
 		proxy = QGraphicsProxyWidget(self)
 		proxy.setWidget(spinbox)		
-		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 10))
+		proxy.setPos(QPointF(width / 2 - spinbox.width() / 2, 40))
 		self.runs = proxy
 		self.spinbox = spinbox
 
@@ -61,8 +62,9 @@ class ProcessGraphic(QGraphicsItem):
 
 
 		painter.fillRect(self.rect, Qt.white)
-		painter.drawRoundedRect(self.rect, 10, 10)
-		painter.drawText(self.rect, Qt.AlignHCenter + Qt.AlignVCenter, self.process.scheme.GetName())
+		painter.drawRect(self.rect)
+
+		painter.drawText(QPointF(40, 30), self.process.scheme.GetName())
 
 	def boundingRect(self):
 		return self.rect

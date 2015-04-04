@@ -157,9 +157,9 @@ def FillScene(aScene, aProcessGraphics):
 		for inp in graphic.inputs:
 			for child in inp.children:
 				controlOffset = 100
-				start = child.GetOutScenePos()
+				start = child.GetScenePos()
 				control1 = start + QPointF(controlOffset, 0)
-				end = inp.GetInScenePos()
+				end = inp.GetScenePos()
 				control2 = end + QPointF(-controlOffset, 0)
 
 				path = QPainterPath()
