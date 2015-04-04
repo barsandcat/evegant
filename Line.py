@@ -210,7 +210,7 @@ class Line(QAbstractTableModel):
 			for i in range(len(res.x)):
 				process = self.processes[i]
 				if not process.manual:
-					process.SetRuns(ceil(res.x[i]))
+					process.SetRuns(int(round(res.x[i])))
 		else:
 			error(str(c) + '\n' +  str(Aub)  + '\n' + str(bub)  + '\n' + str(Aeq)  + '\n' + str(beq)  + '\n' + str(res))
 

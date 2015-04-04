@@ -18,7 +18,7 @@ class ProcessGraphic(QGraphicsItem):
 		icon = QGraphicsPixmapItem(aToolkitTypes.GetTypePixmap(self.process.scheme.schemeId, 32), self)
 		icon.setPos(2, 2)
 		
-		width = 160
+		width = 250
 		space = 40
 
 		inputOffset = 40
@@ -35,7 +35,7 @@ class ProcessGraphic(QGraphicsItem):
 		self.rect = QRectF(0, 0, width, max(outputOffset, inputOffset) + space)
 		
 		spinbox = QSpinBox()
-		spinbox.setRange(1, 1000000000)
+		spinbox.setRange(0, 1000000)
 		spinbox.setValue(self.process.runs)
 		spinbox.valueChanged.connect(self.OnRunChanged)
 

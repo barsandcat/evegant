@@ -22,7 +22,7 @@ class InputGraphic(QGraphicsItem):
 
 	def boundingRect(self):
 		fm = QFontMetricsF(self.font)
-		width = 32 + fm.width(str(self.itemStack.ammount))
+		width = 34 + fm.width(str(self.itemStack.ammount))
 		return QRectF(0, 0, width, 35)
 	
 	def GetItemId(self):
@@ -39,7 +39,7 @@ class OutputGraphic(QGraphicsItem):
 
 	def GetWidth(self):
 		fm = QFontMetricsF(self.font)
-		return 32 + fm.width(str(self.itemStack.ammount))
+		return 34 + fm.width(str(self.itemStack.ammount))
 
 
 	def paint(self, painter, option, widget=None):
@@ -48,7 +48,7 @@ class OutputGraphic(QGraphicsItem):
 		painter.drawText(rect, Qt.AlignVCenter + Qt.AlignRight, str(self.itemStack.ammount))
 
 	def GetScenePos(self):
-		return self.scenePos() + QPointF(-self.GetWidth(), 17)
+		return self.scenePos() + QPointF(0, 17)
 
 	def boundingRect(self):
 		width = self.GetWidth()
