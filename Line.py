@@ -208,7 +208,9 @@ class Line(QAbstractTableModel):
 
 		if res.success:
 			for i in range(len(res.x)):
-				self.processes[i].SetRuns(ceil(res.x[i]))
+				process = self.processes[i]
+				if not process.manual:
+					process.SetRuns(ceil(res.x[i]))
 		else:
 			error(str(c) + '\n' +  str(Aub)  + '\n' + str(bub)  + '\n' + str(Aeq)  + '\n' + str(beq)  + '\n' + str(res))
 
